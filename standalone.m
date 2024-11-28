@@ -120,29 +120,6 @@ tic;
                 
                 tempmpc.branch(n,11) = 1;
 
-                
-                % if(is_island(tempmpc) == 1)
-                %     %{
-                %     Actual solution
-                %     Return bus values that are either island or isolate
-                %     turn off all branches associated
-                %     turn of all generation associated
-                %     run simulation
-                %     turn back on all branches and generation
-                %     probably put into fuction
-                %     %}
-                %     results_array(k,n) = 10;
-                %     tempmpc.branch(n,11) = 1;
-                % else
-                %     %turn off the branch
-                %     tempmpc.gen(:,2)= mpc.gen(:,2) * temp_load_data(n); %generation scaling
-                %     tempmpc.bus(:,3)= mpc.bus(:,3) * temp_load_data(n); %Real Power scaling
-                %     tempmpc.bus(:,4)= mpc.bus(:,4) * temp_load_data(n); %Reactive power scaling
-                %     results = runpf_wcu(tempmpc, mpopt);
-                %     results_array(k,n) = results.success;
-                %     tempmpc.branch(n,11) = 1;
-                % end
-
             end %for loop
         end %parfor loop
         assignin('base', 'n1', n1);
@@ -156,16 +133,4 @@ tic;
         load_data_return = table2array(load_data_table(:,5));
     end
 toc;
-end
-
-%island checker
-%has to be non-nested for parfor functionality
-function [island] = is_island(islandmpc)
-    [groups, isolated] = find_islands(islandmpc);
-        
-    if(size(groups, 2) ~= 1 || size(isolated,2) ~=0)
-        island = 1;
-    else
-        island = 0;
-    end
 end
