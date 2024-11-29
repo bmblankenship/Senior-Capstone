@@ -18,32 +18,24 @@ duration = sheet.ws(ws='Transmission').col(col=4)
 # Fetch other considerations
 considerations = sheet.ws(ws='Transmission').col(col=5)
 
-# Remove headers from imported arrays and print contents for testing
-branches.pop(0)
-duration.pop(0)
-considerations.pop(0)
-
-#print(branches)
-print(duration)
-#print(considerations)
-
 # Sanitize duration inputs
 
 for i, dura in enumerate(duration):
-    if 'day' in dura in dura:
+    if 'day' in dura:
         dura = dura.replace('day', '')
         dura = dura.replace('s', '')
         dura = int(dura)
         dura = dura * 24
         duration[i] = dura
-        i += 1
-    elif 'week' in dura in dura:
+    elif 'week' in dura:
         dura = dura.replace('week', '')
         dura = dura.replace('s', '')
         dura = int(dura)
         dura = dura * 24 * 7
         duration[i] = dura
-        i += 1
+    elif 'Duration' in dura:
+        dura = dura.replace('Duration', 'Duration (Hours)')
+        duration[i] = dura
 
 # Duration is now in hours
 print(duration)
@@ -53,16 +45,13 @@ print(duration)
 output = xl.Database()
 output.add_ws(ws="Schedule")
 
-output.ws(ws="Schedule").update_index(row = 1, col = 1, val = "Branch Number")
-for row_id, data in enumerate(branches, start = 2):
+for row_id, data in enumerate(branches, start = 1):
     output.ws(ws="Schedule").update_index(row = row_id, col = 1, val = data)
 
-output.ws(ws="Schedule").update_index(row = 1, col = 2, val = "Duration (Hours)") 
-for row_id, data in enumerate(duration, start = 2):
+for row_id, data in enumerate(duration, start = 1):
     output.ws(ws="Schedule").update_index(row = row_id, col = 2, val = data)
 
-output.ws(ws="Schedule").update_index(row = 1, col = 3, val = "Considerations") 
-for row_id, data in enumerate(considerations, start = 2):
+for row_id, data in enumerate(considerations, start = 1):
     if(data == ''):
         data = ' '
     output.ws(ws="Schedule").update_index(row = row_id, col = 3, val = data)
