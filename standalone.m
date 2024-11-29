@@ -116,9 +116,8 @@ tic;
                 tempislmpc.bus(:,3) = tempislmpc.bus(:,3) * temp_load_data(n); %Real Power scaling
                 tempislmpc.bus(:,4) = tempislmpc.bus(:,4) * temp_load_data(n); %Reactive power scaling
                 results = runpf_wcu(tempislmpc, mpopt);
-                results_array(k,n) = results.success;
                 
-                tempmpc.branch(n,11) = 1;
+                results_array(k,n) = limits_check(results, n);
 
             end %for loop
         end %parfor loop
@@ -131,6 +130,28 @@ tic;
     function [load_data_return] = import_load_data(LOAD_SHEET)
         load_data_table = readtable(LOAD_SHEET);
         load_data_return = table2array(load_data_table(:,5));
+    end
+
+    %limits calculation
+    function [limit_check_return] = limits_check(mpc_case, n)
+        if(mpc_case.branch(n,14) > mpc_case.branch(n, 16))
+            real_power = mpc_case.branch(n, 14);
+        else
+            real_power = mpc_case.branch(n, 16);
+        end
+        if(mpc_case.branch(n,15) > mpc_case.branch(n, 17))
+            reactive_power = mpc_case.branch(n, 15);
+        else
+            reactive_power = mpc_case.branch(n, 17);
+        end
+
+        apparent_power = sqrt(real_power^2 + reactive_power^2);
+
+        if(apparent_power > mpc_case.branch(n, 6))
+            limit_check_return = 0;
+        else
+            limit_check_return = 1;
+        end
     end
 toc;
 end
