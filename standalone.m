@@ -118,6 +118,7 @@ tic;
                 results = runpf_wcu(tempislmpc, mpopt);
                 
                 results_array(k,n) = limits_check(results, n);
+                tempmpc.branch(n,11) = 1;
 
             end %for loop
         end %parfor loop
