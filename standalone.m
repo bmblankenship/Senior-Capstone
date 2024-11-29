@@ -30,11 +30,15 @@ tic;
     assignin('base', 'mpc', mpc);
     assignin('base', 'generation_outages', generation_outages);
     assignin('base', 'load_data', load_data);
+
     %initial N-1 contingency to verify health of the system with planned generator outages
     [initial_n1, initial_line, initial_results_array] = n1_contingency(SIM_START_HOUR, SIMULATION_HOURS, -1);
+    assignin('base', 'initial_results_array', initial_results_array);
+
+    %These are troubleshooting values that will be removed later
+    %Can remove them from the N-1 contingency return when the time comes
     assignin('base', 'initial_n1', initial_n1);
     assignin('base', 'initial_line', initial_line);
-    assignin('base', 'initial_results_array', initial_results_array);
 
     % Main Loop Framework Layout
     %{ 
