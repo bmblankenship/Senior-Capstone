@@ -19,6 +19,7 @@ duration = sheet.ws(ws='Transmission').col(col=4)
 considerations = sheet.ws(ws='Transmission').col(col=5)
 
 # Sanitize duration inputs
+# This is realistically going to go away when we dictate the file template later.
 
 for i, dura in enumerate(duration):
     if 'day' in dura:
