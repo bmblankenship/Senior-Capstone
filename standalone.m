@@ -116,11 +116,14 @@ tic;
                 tempmpc.branch(n,11) = 0;
 
                 tempislmpc = extract_islands(tempmpc, 1);
+
+                % Need to replace with block dispatch
                 tempislmpc.gen(:,2) = tempislmpc.gen(:,2) * temp_load_data(n); %generation scaling
+
                 tempislmpc.bus(:,3) = tempislmpc.bus(:,3) * temp_load_data(n); %Real Power scaling
                 tempislmpc.bus(:,4) = tempislmpc.bus(:,4) * temp_load_data(n); %Reactive power scaling
+
                 results = runpf_wcu(tempislmpc, mpopt);
-                
                 results_array(k,n) = limits_check(results, n);
                 tempmpc.branch(n,11) = 1;
 
@@ -139,24 +142,33 @@ tic;
 
     %limits calculation
     function [limit_check_return] = limits_check(mpc_case, n)
-        if(mpc_case.branch(n,14) > mpc_case.branch(n, 16))
-            real_power = mpc_case.branch(n, 14);
+        %change to iterate through all branches on each call instead of passing in a line value n
+        s1 = sqrt(mpc_case.branch(n,14)^2 + mpc_case.branch(n,15)^2);
+        s2 = sqrt(mpc_case.branch(n,16)^2 + mpc_case.branch(n,17)^2);
+        if(s1 > s2)
+            apparent_power = s1;
         else
-            real_power = mpc_case.branch(n, 16);
-        end
-        if(mpc_case.branch(n,15) > mpc_case.branch(n, 17))
-            reactive_power = mpc_case.branch(n, 15);
-        else
-            reactive_power = mpc_case.branch(n, 17);
+            apparent_power = s2;
         end
 
-        apparent_power = sqrt(real_power^2 + reactive_power^2);
+        %re-index to bus
+        if(mpc_case.bus(n,8) <= 1.1 && mpc_case.bus(n,8) >= 0.9)
+            voltage = true;
+        else
+            voltage = false;
+        end
 
-        if(apparent_power > mpc_case.branch(n, 6))
+        if(apparent_power > mpc_case.branch(n, 6) && voltage == false)
             limit_check_return = 0;
         else
             limit_check_return = 1;
         end
+    end
+
+    %Block Dispatch
+    function block_dispatch(mpc)
+        %Insert block dispatch functionality
+        %Consider having this be precalculted instead of running at runtime.
     end
 toc;
 end
