@@ -6,6 +6,7 @@
     ALGORITHM_TYPE: string for which power flow algorithm will be used eg: 'NR'
     CASE_NAME: string for which case is being ran eg: 'case118_CAPER_PeakLoad.m'
     SIMULATION_HOURS: number of hours of the year to iterate over, maximum value 8760
+    SIM_START_HOUR: hour index in year to start the simulation. Default should be 1 for most cases
 
     example function call:
     standalone(186, 0, 'RequiredOutages.xlsx', 'HourlyLoad.xlsx', 'NR', 'case118_CAPER_PeakLoad.m', 5, 1);
@@ -125,6 +126,10 @@ tic;
 
                 results = runpf_wcu(tempislmpc, mpopt);
                 results_array(k,n) = limits_check(results, n);
+                
+                if(results_array(k,n) == 0)
+                    assignin('base', 'global_success', 0);
+                end
                 tempmpc.branch(n,11) = 1;
 
             end %for loop
@@ -141,27 +146,41 @@ tic;
     end
 
     %limits calculation
-    function [limit_check_return] = limits_check(mpc_case, n)
+    function [limit_check_return] = limits_check(mpc_case)
         %change to iterate through all branches on each call instead of passing in a line value n
-        s1 = sqrt(mpc_case.branch(n,14)^2 + mpc_case.branch(n,15)^2);
-        s2 = sqrt(mpc_case.branch(n,16)^2 + mpc_case.branch(n,17)^2);
-        if(s1 > s2)
-            apparent_power = s1;
-        else
-            apparent_power = s2;
-        end
-        
-        voltage = false;
-        %re-index to bus
-        if(mpc_case.bus(n,8) <= 1.1 && mpc_case.bus(n,8) >= 0.9)
-            voltage = true;
-        end
+        limit_check_return = 1;
 
-        if(apparent_power > mpc_case.branch(n, 6) && voltage == false)
-            limit_check_return = 0;
-        else
-            limit_check_return = 1;
+        MVA_success_flag = true;
+        for n = 1:height(mpc_case.branch)
+            if(~MVA_success_flag)
+                limit_check_return = 0;
+            elseif(MVA_sucess_flag)
+                s1 = sqrt(mpc_case.branch(n,14)^2 + mpc_case.branch(n,15)^2);
+                s2 = sqrt(mpc_case.branch(n,16)^2 + mpc_case.branch(n,17)^2);
+                if(s1 > s2)
+                    apparent_power = s1;
+                else
+                    apparent_power = s2;
+                end
+
+                if(apparent_power > mpc_case.branch(n,6))
+                    MVA_success_flag = false;
+                end
+            end
         end
+        assignin('base', 'MVA_SUCCESS_FLAG', MVA_success_flag);
+
+        voltage_success_flag = true;
+        for n = 1:height(mpc_case.gen)
+            if(~voltage_success_flag)
+                limit_check_return = 0;
+            elseif(mpc_case.bus(n,8) >= 1.1 && mpc_case.bus(n,8) <= 0.9)
+                voltage_success_flag = false;
+            else
+                voltage_success_flag = true;
+            end
+        end
+        assignin('base', 'VOLTAGE_SUCCESS_FLAG', voltage_success_flag);
     end
 
     %Block Dispatch
