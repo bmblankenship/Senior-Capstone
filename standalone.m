@@ -150,12 +150,11 @@ tic;
         else
             apparent_power = s2;
         end
-
+        
+        voltage = false;
         %re-index to bus
         if(mpc_case.bus(n,8) <= 1.1 && mpc_case.bus(n,8) >= 0.9)
             voltage = true;
-        else
-            voltage = false;
         end
 
         if(apparent_power > mpc_case.branch(n, 6) && voltage == false)
