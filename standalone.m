@@ -1,5 +1,4 @@
 %{
-    NUM_BRANCHES: integer value for the number of branches present on the system
     VERBOSE: integer value of 0, 1 or 2. Set to 0 for no output to console to increase simulation speed
     OUTAGE_SHEET: string for name of the outage sheet being used eg: 'RequiredOutages.xlsx'
     LOAD_SHEET: string for the name of the load sheet being used eg: 'HourlyLoad.xlsx'
@@ -9,10 +8,10 @@
     SIM_START_HOUR: hour index in year to start the simulation. Default should be 1 for most cases
 
     example function call:
-    standalone(186, 0, 'RequiredOutages.xlsx', 'HourlyLoad.xlsx', 'NR', 'case118_CAPER_PeakLoad.m', 5, 1);
+    standalone(0, 'RequiredOutages.xlsx', 'HourlyLoad.xlsx', 'NR', 'case118_CAPER_PeakLoad.m', 5, 1);
 %}
 
-function standalone(NUM_BRANCHES, VERBOSE, OUTAGE_SHEET, LOAD_SHEET, ALGORITHM_TYPE, CASE_NAME, SIMULATION_HOURS, SIM_START_HOUR)
+function standalone(VERBOSE, OUTAGE_SHEET, LOAD_SHEET, ALGORITHM_TYPE, CASE_NAME, SIMULATION_HOURS, SIM_START_HOUR)
 tic;
     if(SIMULATION_HOURS > 8760)
         warning('Simulation Hours Specified are out of range (>8760). Setting to 8760.');
@@ -57,7 +56,7 @@ tic;
         gen_start_dates = table2array(generator_data(:,4));
         gen_outage_duration = table2array(generator_data(:,5));
         
-        start_hours = [zeros,length(gen_start_dates)];
+        start_hours = [zeros, length(gen_start_dates)];
         end_hours = [zeros, length(gen_outage_duration)];
 
         for k = 1:length(gen_start_dates)
@@ -78,7 +77,7 @@ tic;
         %default values for return variables
         n1 = 1;
         line = 0;
-        results_array = [zeros,NUM_BRANCHES;zeros,NUM_BRANCHES];
+        results_array = [zeros,8760;zeros,height(mpc.branch)];
 
         for k = starthour:endhour
             if(mod(k, 10) == 0)
@@ -110,7 +109,7 @@ tic;
                 end
             end%for loop
 
-            for n = 1:NUM_BRANCHES  
+            for n = 1:height(tempmpc.branch)
                 if(lineout ~= -1)%case where no line is selected
                     tempmpc.branch(lineout, 11) = 0;
                 end
@@ -125,7 +124,7 @@ tic;
                 tempislmpc.bus(:,4) = tempislmpc.bus(:,4) * temp_load_data(n); %Reactive power scaling
 
                 results = runpf_wcu(tempislmpc, mpopt);
-                results_array(k,n) = limits_check(results, n);
+                results_array(k,n) = limits_check(results);
                 
                 if(results_array(k,n) == 0)
                     assignin('base', 'global_success', 0);
@@ -145,48 +144,49 @@ tic;
         load_data_return = table2array(load_data_table(:,5));
     end
 
-    %limits calculation
-    function [limit_check_return] = limits_check(mpc_case)
-        %change to iterate through all branches on each call instead of passing in a line value n
-        limit_check_return = 1;
-
-        MVA_success_flag = true;
-        for n = 1:height(mpc_case.branch)
-            if(~MVA_success_flag)
-                limit_check_return = 0;
-            elseif(MVA_sucess_flag)
-                s1 = sqrt(mpc_case.branch(n,14)^2 + mpc_case.branch(n,15)^2);
-                s2 = sqrt(mpc_case.branch(n,16)^2 + mpc_case.branch(n,17)^2);
-                if(s1 > s2)
-                    apparent_power = s1;
-                else
-                    apparent_power = s2;
-                end
-
-                if(apparent_power > mpc_case.branch(n,6))
-                    MVA_success_flag = false;
-                end
-            end
-        end
-        assignin('base', 'MVA_SUCCESS_FLAG', MVA_success_flag);
-
-        voltage_success_flag = true;
-        for n = 1:height(mpc_case.gen)
-            if(~voltage_success_flag)
-                limit_check_return = 0;
-            elseif(mpc_case.bus(n,8) >= 1.1 && mpc_case.bus(n,8) <= 0.9)
-                voltage_success_flag = false;
-            else
-                voltage_success_flag = true;
-            end
-        end
-        assignin('base', 'VOLTAGE_SUCCESS_FLAG', voltage_success_flag);
-    end
-
     %Block Dispatch
     function block_dispatch(mpc)
         %Insert block dispatch functionality
         %Consider having this be precalculted instead of running at runtime.
     end
 toc;
+end
+
+%limits calculation
+function limit_check_return = limits_check(mpc_case)
+    limit_check_return = 1;
+
+    MVA_success_flag = true;
+    for n = 1:height(mpc_case.branch)
+        if(~MVA_success_flag)
+            limit_check_return = 0;
+            break;
+        elseif(MVA_success_flag)
+            s1 = sqrt(mpc_case.branch(n,14)^2 + mpc_case.branch(n,15)^2);
+            s2 = sqrt(mpc_case.branch(n,16)^2 + mpc_case.branch(n,17)^2);
+            if(s1 > s2)
+                apparent_power = s1;
+            else
+                apparent_power = s2;
+            end
+
+            if(apparent_power > mpc_case.branch(n,6))
+                MVA_success_flag = false;
+            end
+        end
+    end
+    assignin('base', 'MVA_SUCCESS_FLAG', MVA_success_flag);
+
+    voltage_success_flag = true;
+    for n = 1:height(mpc_case.gen)
+        if(~voltage_success_flag)
+            limit_check_return = 0;
+            break;
+        elseif(mpc_case.bus(n,8) >= 1.1 && mpc_case.bus(n,8) <= 0.9)
+            voltage_success_flag = false;
+        else
+            voltage_success_flag = true;
+        end
+    end
+    assignin('base', 'VOLTAGE_SUCCESS_FLAG', voltage_success_flag);
 end
