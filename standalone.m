@@ -184,8 +184,6 @@ function limit_check_return = limits_check(mpc_case)
             break;
         elseif(mpc_case.bus(n,8) >= 1.1 && mpc_case.bus(n,8) <= 0.9)
             voltage_success_flag = false;
-        else
-            voltage_success_flag = true;
         end
     end
     assignin('base', 'VOLTAGE_SUCCESS_FLAG', voltage_success_flag);
