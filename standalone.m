@@ -6,12 +6,13 @@
     CASE_NAME: string for which case is being ran eg: 'case118_CAPER_PeakLoad.m'
     SIMULATION_HOURS: number of hours of the year to iterate over, maximum value 8760
     SIM_START_HOUR: hour index in year to start the simulation. Default should be 1 for most cases
+    CASE_SHEET: The Excel sheet containing the original case data
 
     example function call:
-    standalone(0, 'RequiredOutages.xlsx', 'HourlyLoad.xlsx', 'NR', 'case118_CAPER_PeakLoad.m', 5, 1);
+    standalone(0, 'RequiredOutages.xlsx', 'HourlyLoad.xlsx', 'NR', 'case118_CAPER_PeakLoad.m', 5, 1, 'InitialCaseData.xlsx');
 %}
 
-function standalone(VERBOSE, OUTAGE_SHEET, LOAD_SHEET, ALGORITHM_TYPE, CASE_NAME, SIMULATION_HOURS, SIM_START_HOUR)
+function standalone(VERBOSE, OUTAGE_SHEET, LOAD_SHEET, ALGORITHM_TYPE, CASE_NAME, SIMULATION_HOURS, SIM_START_HOUR, CASE_SHEET)
 tic;
     if(SIMULATION_HOURS > 8760)
         warning('Simulation Hours Specified are out of range (>8760). Setting to 8760.');
@@ -69,7 +70,37 @@ tic;
     %
     % NOT YET IMPLEMENTED
     %
-    function [block_dispatch] = gen_block_dispatch()
+    function [block_dispatch] = gen_block_dispatch()   
+        generation_blocks = readtable(CASE_SHEET, "sheet", "Gen");
+        gen_block_1 = [,];
+        gen_block_2 = [,];
+        gen_block_3 = [,];
+        gen_block_4 = [,];
+        gen_block_5 = [,];
+
+        % Assign Generators to blocks
+        for k = 1:length(generation_blocks)
+            switch generation_blocks(k,22)
+            case 1
+                gen_block_1(1,end+1) = generation_blocks(k,1);
+                gen_block_1(2,end+1) = generation_blocks(k,22);
+            case 2
+                gen_block_2(1,end+1) = generation_blocks(k,1);
+                gen_block_2(2,end+1) = generation_blocks(k,22);
+            case 3
+                gen_block_3(1,end+1) = generation_blocks(k,1);
+                gen_block_3(2,end+1) = generation_blocks(k,22);
+            case 4
+                gen_block_4(1,end+1) = generation_blocks(k,1);
+                gen_block_4(2,end+1) = generation_blocks(k,22);
+            case 5
+                gen_block_5(1,end+1) = generation_blocks(k,1);
+                gen_block_5(2,end+1) = generation_blocks(k,22);
+            end
+        end
+
+        % Logic to assign a generation block dispatch to the load curve for the year.
+        % This should be indexed off the base case and not calcuated at each time period
     end
 
     %
