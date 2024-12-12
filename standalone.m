@@ -33,13 +33,8 @@ tic;
     assignin('base', 'load_data', load_data);
 
     %initial N-1 contingency to verify health of the system with planned generator outages
-    [initial_n1, initial_line, initial_results_array] = n1_contingency(SIM_START_HOUR, SIMULATION_HOURS, -1);
+    [initial_results_array] = n1_contingency(SIM_START_HOUR, SIMULATION_HOURS, -1);
     assignin('base', 'initial_results_array', initial_results_array);
-
-    %These are troubleshooting values that will be removed later
-    %Can remove them from the N-1 contingency return when the time comes
-    assignin('base', 'initial_n1', initial_n1);
-    assignin('base', 'initial_line', initial_line);
 
     % Main Loop Framework Layout
     %{ 
@@ -72,11 +67,11 @@ tic;
     %
     function [block_dispatch] = gen_block_dispatch()   
         generation_blocks = readtable(CASE_SHEET, "sheet", "Gen");
-        gen_block_1 = [,];
-        gen_block_2 = [,];
-        gen_block_3 = [,];
-        gen_block_4 = [,];
-        gen_block_5 = [,];
+        gen_block_1 = (0,0);
+        gen_block_2 = (0,0);
+        gen_block_3 = (0,0);
+        gen_block_4 = (0,0);
+        gen_block_5 = (0,0);
 
         % Assign Generators to blocks
         for k = 1:length(generation_blocks)
@@ -101,6 +96,9 @@ tic;
 
         % Logic to assign a generation block dispatch to the load curve for the year.
         % This should be indexed off the base case and not calcuated at each time period
+        % 1) For each hour of load, compared to block 1.
+        % 2) If greater than block one, assign full block, otherwise assign partial of block 1 equal to load.
+        % 3) continue up to the blocks until dispatched generation = load
     end
 
     %
@@ -134,10 +132,7 @@ tic;
     end
     
     %n-1 contingency
-    function [n1, line, results_array] = n1_contingency(starthour,endhour,lineout) 
-        %default values for return variables
-        n1 = 1;
-        line = 0;
+    function [results_array] = n1_contingency(starthour,endhour,lineout) 
         results_array = [zeros,8760;zeros,height(mpc.branch)];
 
         for k = starthour:endhour
