@@ -6,12 +6,13 @@
     CASE_NAME: string for which case is being ran eg: 'case118_CAPER_PeakLoad.m'
     SIMULATION_HOURS: number of hours of the year to iterate over, maximum value 8760
     SIM_START_HOUR: hour index in year to start the simulation. Default should be 1 for most cases
+    CASE_SHEET: The Excel sheet containing the original case data
 
     example function call:
-    standalone(0, 'RequiredOutages.xlsx', 'HourlyLoad.xlsx', 'NR', 'case118_CAPER_PeakLoad.m', 5, 1);
+    standalone(0, 'RequiredOutages.xlsx', 'HourlyLoad.xlsx', 'NR', 'case118_CAPER_PeakLoad.m', 5, 1, 'InitialCaseData.xlsx');
 %}
 
-function standalone(VERBOSE, OUTAGE_SHEET, LOAD_SHEET, ALGORITHM_TYPE, CASE_NAME, SIMULATION_HOURS, SIM_START_HOUR)
+function standalone(VERBOSE, OUTAGE_SHEET, LOAD_SHEET, ALGORITHM_TYPE, CASE_NAME, SIMULATION_HOURS, SIM_START_HOUR, CASE_SHEET)
 tic;
     if(SIMULATION_HOURS > 8760)
         warning('Simulation Hours Specified are out of range (>8760). Setting to 8760.');
@@ -32,13 +33,8 @@ tic;
     assignin('base', 'load_data', load_data);
 
     %initial N-1 contingency to verify health of the system with planned generator outages
-    [initial_n1, initial_line, initial_results_array] = n1_contingency(SIM_START_HOUR, SIMULATION_HOURS, -1);
+    [initial_results_array] = n1_contingency(SIM_START_HOUR, SIMULATION_HOURS, -1);
     assignin('base', 'initial_results_array', initial_results_array);
-
-    %These are troubleshooting values that will be removed later
-    %Can remove them from the N-1 contingency return when the time comes
-    assignin('base', 'initial_n1', initial_n1);
-    assignin('base', 'initial_line', initial_line);
 
     % Main Loop Framework Layout
     %{ 
@@ -47,6 +43,69 @@ tic;
         3) If the schedule works, post to excel sheet and conclude simulation
         4) If schedule fails, regenerate schedule and make sure it is not the same schedule
     %}
+
+    %
+    % NOT YET IMPLEMENTED
+    %
+    function [base_case] = base_schedule_case(schedule)
+        % Obtain the ranges that will be simulated from the schedule.
+        % This avoids running hours again after the original N-1 contingency that do not need to be reran
+        % Must be indexed to obtain the proper values later on.
+        % Format:
+        % Branch Number | Start Time | End Time
+
+        base_case_branch_outages = schedule(branch_number);
+        base_case_start_hours = schedule(start_time);
+        base_case_end_hours = schedule(end_time);
+
+        for i = 1:length(base_case_branch_outages) % Index through branches
+        end
+    end
+
+    %
+    % NOT YET IMPLEMENTED
+    %
+    function [block_dispatch] = gen_block_dispatch()   
+        generation_blocks = readtable(CASE_SHEET, "sheet", "Gen");
+        gen_block_1 = (0,0);
+        gen_block_2 = (0,0);
+        gen_block_3 = (0,0);
+        gen_block_4 = (0,0);
+        gen_block_5 = (0,0);
+
+        % Assign Generators to blocks
+        for k = 1:length(generation_blocks)
+            switch generation_blocks(k,22)
+            case 1
+                gen_block_1(1,end+1) = generation_blocks(k,1);
+                gen_block_1(2,end+1) = generation_blocks(k,22);
+            case 2
+                gen_block_2(1,end+1) = generation_blocks(k,1);
+                gen_block_2(2,end+1) = generation_blocks(k,22);
+            case 3
+                gen_block_3(1,end+1) = generation_blocks(k,1);
+                gen_block_3(2,end+1) = generation_blocks(k,22);
+            case 4
+                gen_block_4(1,end+1) = generation_blocks(k,1);
+                gen_block_4(2,end+1) = generation_blocks(k,22);
+            case 5
+                gen_block_5(1,end+1) = generation_blocks(k,1);
+                gen_block_5(2,end+1) = generation_blocks(k,22);
+            end
+        end
+
+        % Logic to assign a generation block dispatch to the load curve for the year.
+        % This should be indexed off the base case and not calcuated at each time period
+        % 1) For each hour of load, compared to block 1.
+        % 2) If greater than block one, assign full block, otherwise assign partial of block 1 equal to load.
+        % 3) continue up to the blocks until dispatched generation = load
+    end
+
+    %
+    % NOT YET IMPLEMENTED
+    %
+    function error_handler()
+    end
 
     %generator outage
     function [generator_outage] = generator_outage(filename, tabname)
@@ -73,10 +132,7 @@ tic;
     end
     
     %n-1 contingency
-    function [n1, line, results_array] = n1_contingency(starthour,endhour,lineout) 
-        %default values for return variables
-        n1 = 1;
-        line = 0;
+    function [results_array] = n1_contingency(starthour,endhour,lineout) 
         results_array = [zeros,8760;zeros,height(mpc.branch)];
 
         for k = starthour:endhour
