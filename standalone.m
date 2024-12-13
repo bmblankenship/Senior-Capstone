@@ -171,15 +171,15 @@ tic;
                 end
                 tempmpc.branch(n,11) = 0;
 
-                tempislmpc = extract_islands(tempmpc, 1);
+                temp_isl_mpc = extract_islands(tempmpc, 1);
 
                 % Need to replace with block dispatch
-                tempislmpc.gen(:,2) = tempislmpc.gen(:,2) * temp_load_data(n); %generation scaling
+                temp_isl_mpc.gen(:,2) = temp_isl_mpc.gen(:,2) * temp_load_data(n); %generation scaling
 
-                tempislmpc.bus(:,3) = tempislmpc.bus(:,3) * temp_load_data(n); %Real Power scaling
-                tempislmpc.bus(:,4) = tempislmpc.bus(:,4) * temp_load_data(n); %Reactive power scaling
+                temp_isl_mpc.bus(:,3) = temp_isl_mpc.bus(:,3) * temp_load_data(n); %Real Power scaling
+                temp_isl_mpc.bus(:,4) = temp_isl_mpc.bus(:,4) * temp_load_data(n); %Reactive power scaling
 
-                results = runpf_wcu(tempislmpc, mpopt);
+                results = runpf_wcu(temp_isl_mpc, mpopt);
                 results_array(k,n) = limits_check(results);
                 
                 if(results_array(k,n) == 0)
@@ -189,8 +189,6 @@ tic;
 
             end %for loop
         end %parfor loop
-        assignin('base', 'n1', n1);
-        assignin('base', 'line', line);
         assignin('base', 'results_array', results_array);
     end 
 
