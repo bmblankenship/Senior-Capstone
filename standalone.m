@@ -202,10 +202,10 @@ tic;
                 temp_isl_mpc = extract_islands(tempmpc, 1);
 
                 % Need to replace with block dispatch
-                temp_isl_mpc.gen(:,2) = temp_isl_mpc.gen(:,2) * temp_load_data(n); %generation scaling
+                temp_isl_mpc.gen(:,2) = temp_isl_mpc.gen(:,2) * temp_load_data(k,2); %generation scaling
 
-                temp_isl_mpc.bus(:,3) = temp_isl_mpc.bus(:,3) * temp_load_data(n); %Real Power scaling
-                temp_isl_mpc.bus(:,4) = temp_isl_mpc.bus(:,4) * temp_load_data(n); %Reactive power scaling
+                temp_isl_mpc.bus(:,3) = temp_isl_mpc.bus(:,3) * temp_load_data(k,2); %Real Power scaling
+                temp_isl_mpc.bus(:,4) = temp_isl_mpc.bus(:,4) * temp_load_data(k,2); %Reactive power scaling
 
                 results = runpf_wcu(temp_isl_mpc, mpopt);
                 results_array(k,n) = limits_check(results);
