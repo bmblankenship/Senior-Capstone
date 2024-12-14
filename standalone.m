@@ -18,7 +18,8 @@ tic;
         warning('Simulation Hours Specified are out of range (>8760). Setting to 8760.');
         SIMULATION_HOURS = 8760;
     end
-
+    
+    test = gen_block_dispatch();
     % mpc.gen(:,2)=mpc.gen(:,2); %generation scaling
     % mpc.bus(:,3)=mpc.bus(:,3); %Real Power scaling
     % mpc.bus(:,4)=mpc.bus(:,4); %Reactive power scaling
@@ -66,33 +67,60 @@ tic;
     % NOT YET IMPLEMENTED
     %
     function [block_dispatch] = gen_block_dispatch()   
-        generation_blocks = readtable(CASE_SHEET, "sheet", "Gen");
-        gen_block_1 = [0,0];
-        gen_block_2 = [0,0];
-        gen_block_3 = [0,0];
-        gen_block_4 = [0,0];
-        gen_block_5 = [0,0];
+        generation_blocks = table2array(readtable(CASE_SHEET, "sheet", "Gen"));
+        assignin('base', 'gen_blocks', generation_blocks);
+        % Return variable
+        % Format is block 1 - 2 - 3 - 4 - 5 and will be percent utilization of that block
+        block_dispatch = [zeros, 8760; zeros, 8760; zeros, 8760; zeros, 8760; zeros, 8760;];;
+        gen_block_1 = [];
+        gen_block_1_avail = 0;
+        gen_block_2 = [];
+        gen_block_2_avail = 0;
+        gen_block_3 = [];
+        gen_block_3_avail = 0;
+        gen_block_4 = [];
+        gen_block_4_avail = 0;
+        gen_block_5 = [];
+        gen_block_5_avail = 0;
 
         % Assign Generators to blocks
-        for k = 1:length(generation_blocks)
+        %{
+            gen_block_1->5 format:
+            column 1: bus location
+            column 2: dispatch block
+            column 3: real power value of generator
+        %}
+        for k = 1:height(generation_blocks)
             switch generation_blocks(k,22)
             case 1
-                gen_block_1(1,end+1) = generation_blocks(k,1);
-                gen_block_1(2,end+1) = generation_blocks(k,22);
+                gen_block_1(end+1,1) = generation_blocks(k,1);
+                gen_block_1(end,2) = generation_blocks(k,22);
+                gen_block_1(end,3) = generation_blocks(k,9);
+                gen_block_1_avail = gen_block_1_avail + generation_blocks(k,9);
             case 2
-                gen_block_2(1,end+1) = generation_blocks(k,1);
-                gen_block_2(2,end+1) = generation_blocks(k,22);
+                gen_block_2(end+1,1) = generation_blocks(k,1);
+                gen_block_2(end,2) = generation_blocks(k,22);
+                gen_block_2(end,3) = generation_blocks(k,9);
+                gen_block_2_avail = gen_block_2_avail + generation_blocks(k,9);
             case 3
-                gen_block_3(1,end+1) = generation_blocks(k,1);
-                gen_block_3(2,end+1) = generation_blocks(k,22);
+                gen_block_3(end+1,1) = generation_blocks(k,1);
+                gen_block_3(end,2) = generation_blocks(k,22);
+                gen_block_3(end,3) = generation_blocks(k,9);
+                gen_block_3_avail = gen_block_3_avail + generation_blocks(k,9);
             case 4
-                gen_block_4(1,end+1) = generation_blocks(k,1);
-                gen_block_4(2,end+1) = generation_blocks(k,22);
+                gen_block_4(end+1,1) = generation_blocks(k,1);
+                gen_block_4(end,2) = generation_blocks(k,22);
+                gen_block_4(end,3) = generation_blocks(k,9);
+                gen_block_4_avail = gen_block_4_avail + generation_blocks(k,9);
             case 5
-                gen_block_5(1,end+1) = generation_blocks(k,1);
-                gen_block_5(2,end+1) = generation_blocks(k,22);
+                gen_block_5(end+1,1) = generation_blocks(k,1);
+                gen_block_5(end,2) = generation_blocks(k,22);
+                gen_block_5(end,3) = generation_blocks(k,9);
+                gen_block_5_avail = gen_block_5_avail + generation_blocks(k,9);
             end
         end
+        
+        total_generation_avaliable = gen_block_1_avail + gen_block_2_avail + gen_block_3_avail + gen_block_4_avail + gen_block_5_avail;
 
         % Logic to assign a generation block dispatch to the load curve for the year.
         % This should be indexed off the base case and not calcuated at each time period
@@ -195,13 +223,7 @@ tic;
     %Load data Loader
     function [load_data_return] = import_load_data(LOAD_SHEET)
         load_data_table = readtable(LOAD_SHEET);
-        load_data_return = table2array(load_data_table(:,5));
-    end
-
-    %Block Dispatch
-    function block_dispatch(mpc)
-        %Insert block dispatch functionality
-        %Consider having this be precalculted instead of running at runtime.
+        load_data_return = [table2array(load_data_table(:,3)) , table2array(load_data_table(:,5))];
     end
 toc;
 end
