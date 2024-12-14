@@ -67,11 +67,11 @@ tic;
     %
     function [block_dispatch] = gen_block_dispatch()   
         generation_blocks = readtable(CASE_SHEET, "sheet", "Gen");
-        gen_block_1 = (0,0);
-        gen_block_2 = (0,0);
-        gen_block_3 = (0,0);
-        gen_block_4 = (0,0);
-        gen_block_5 = (0,0);
+        gen_block_1 = [0,0];
+        gen_block_2 = [0,0];
+        gen_block_3 = [0,0];
+        gen_block_4 = [0,0];
+        gen_block_5 = [0,0];
 
         % Assign Generators to blocks
         for k = 1:length(generation_blocks)
