@@ -78,6 +78,7 @@ tic;
         % block 1 is highest priority
         % block 5 is lowest priority
         % Generates the dispatch for the entire year, meaning the array will need to be regenerated in the case that load changes
+        % Regenerate by recalling the function with the new load added in
         
         % Import block references from proper excel sheet
         generation_blocks = table2array(readtable(CASE_SHEET, "sheet", "Gen"));
