@@ -12,6 +12,7 @@
     standalone(0, 'RequiredOutages.xlsx', 'HourlyLoad.xlsx', 'NR-SH', 'case118_CAPER_PeakLoad.m', 5, 1, 'InitialCaseData.xlsx');
 %}
 
+%% Initialization
 function standalone(VERBOSE, OUTAGE_SHEET, LOAD_SHEET, ALGORITHM_TYPE, CASE_NAME, SIMULATION_HOURS, SIM_START_HOUR, CASE_SHEET)
 tic;
     if(SIMULATION_HOURS > 8760)
@@ -32,7 +33,7 @@ tic;
 
     % Generation Initilization
     generation_outages = generator_outage(OUTAGE_SHEET, 'Generation');
-    block_dispatch = generator_block_dispatch();
+    block_dispatch = generate_block_dispatch();
 
     % MATLAB debugging Variables
     assignin('base', 'mpc', mpc);
@@ -55,6 +56,7 @@ tic;
     %
     % NOT YET IMPLEMENTED
     %
+    %% Base Case Simulation
     function [base_case] = base_schedule_case(schedule)
         % Obtain the ranges that will be simulated from the schedule.
         % This avoids running hours again after the original N-1 contingency that do not need to be reran
@@ -70,15 +72,20 @@ tic;
         end
     end
 
-    %
-    % NOT YET IMPLEMENTED
-    %
-    function [dispatch] = generator_block_dispatch()   
+    %% Block Dispatch Generator
+    function [dispatch] = generate_block_dispatch()
+        % generate_block_dispatch Generate 8760x5 array of block weightings
+        % block 1 is highest priority
+        % block 5 is lowest priority
+        % Generates the dispatch for the entire year, meaning the array will need to be regenerated in the case that load changes
+        
+        % Import block references from proper excel sheet
         generation_blocks = table2array(readtable(CASE_SHEET, "sheet", "Gen"));
-        assignin('base', 'gen_blocks', generation_blocks);
+
         % Return variable
         % Format is block 1 - 2 - 3 - 4 - 5 and will be percent utilization of that block
         dispatch = [zeros, 8760; zeros, 8760; zeros, 8760; zeros, 8760; zeros, 8760];
+
         gen_block_1 = [];
         gen_block_1_avail = 0;
         gen_block_2 = [];
@@ -124,8 +131,8 @@ tic;
                 gen_block_5(end,2) = generation_blocks(k,22);
                 gen_block_5(end,3) = generation_blocks(k,9);
                 gen_block_5_avail = gen_block_5_avail + generation_blocks(k,9);
-            end
-        end
+            end% End Switch
+        end% End For Loop
 
         % Block debugging variables
         assignin('base', 'block_1', gen_block_1);
@@ -133,6 +140,7 @@ tic;
         assignin('base', 'block_3', gen_block_3);
         assignin('base', 'block_4', gen_block_4);
         assignin('base', 'block_5', gen_block_5);
+        assignin('base', 'gen_blocks', generation_blocks);
         
         % Iterate through all hours and assign dispatch values to each hour from 1 to 8760
         for k = 1:8760
@@ -173,8 +181,8 @@ tic;
                                 gen_block_5_avail = gen_block_5_avail - gen_block_5(b,3);
                             end
                         end
-                    end
-                end
+                    end% End Switch
+                end % End if
 
                 % Check if generation needs to be turned on after an outage
                 if (generation_outages(j,2) + generation_outages(j,3) == k)
@@ -212,9 +220,9 @@ tic;
                                 gen_block_5_avail = gen_block_5_avail + gen_block_5(b,3);
                             end
                         end
-                    end
-                end
-            end
+                    end% End Switch
+                end% End if
+            end% End For
 
             % Compare load for this hour to the size of the availiable generation.
             % Assign a percentage of the block generation to each hour.
@@ -228,7 +236,9 @@ tic;
             dispatch(k,5) = 0;
 
             % Dispatch Block 1
-            if(current_load - gen_block_1_avail < 0)
+            if(current_load == 0)
+                dispatch(k,1) = 0;
+            elseif(current_load - gen_block_1_avail < 0)
                 extra_gen = gen_block_1_avail - current_load;
                 dispatch(k,1) = extra_gen / gen_block_1_avail;
                 current_load = 0;
@@ -295,10 +305,11 @@ tic;
     %
     % NOT YET IMPLEMENTED
     %
+    %% error_handler
     function error_handler()
     end
 
-    %generator outage
+    %%generator outage
     function [generator_outage] = generator_outage(filename, tabname)
         generator_data = readtable(filename, "sheet", tabname);
         gen_block_data = table2array(readtable(CASE_SHEET, "sheet", "Gen"));
@@ -331,7 +342,7 @@ tic;
         %generator_outage = table2array (generator_outage);
     end
     
-    %n-1 contingency
+    %%n-1 contingency
     function [results_array] = n1_contingency(starthour,endhour,lineout) 
         results_array = [zeros,8760;zeros,height(mpc.branch)];
 
@@ -392,7 +403,7 @@ tic;
         assignin('base', 'results_array', results_array);
     end 
 
-    %Load data Loader
+    %%Load data Loader
     function [load_data_return] = import_load_data(LOAD_SHEET)
         load_data_table = readtable(LOAD_SHEET);
         load_data_return = [table2array(load_data_table(:,3)) , table2array(load_data_table(:,5))];
@@ -400,7 +411,7 @@ tic;
 toc;
 end
 
-%limits calculation
+%%limits calculation
 function limit_check_return = limits_check(mpc_case)
     limit_check_return = 1;
 
