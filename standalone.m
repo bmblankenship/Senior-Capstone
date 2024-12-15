@@ -19,19 +19,26 @@ tic;
         SIMULATION_HOURS = 8760;
     end
     
-    test = gen_block_dispatch();
     % mpc.gen(:,2)=mpc.gen(:,2); %generation scaling
     % mpc.bus(:,3)=mpc.bus(:,3); %Real Power scaling
     % mpc.bus(:,4)=mpc.bus(:,4); %Reactive power scaling
     
-    %initialize system
+    % Options Initilization
     mpopt = mpoption('pf.alg', ALGORITHM_TYPE, 'verbose', VERBOSE);
     mpc = runpf_wcu(CASE_NAME, mpopt);
-    generation_outages = generator_outage(OUTAGE_SHEET, 'Generation');
+
+    % Load Data Initilization
     load_data = import_load_data(LOAD_SHEET);
+
+    % Generation Initilization
+    generation_outages = generator_outage(OUTAGE_SHEET, 'Generation');
+    block_dispatch = generator_block_dispatch();
+
+    % MATLAB debugging Variables
     assignin('base', 'mpc', mpc);
     assignin('base', 'generation_outages', generation_outages);
     assignin('base', 'load_data', load_data);
+    assignin('base', 'block_dispatch', block_dispatch);
 
     %initial N-1 contingency to verify health of the system with planned generator outages
     [initial_results_array] = n1_contingency(SIM_START_HOUR, SIMULATION_HOURS, -1);
@@ -66,12 +73,12 @@ tic;
     %
     % NOT YET IMPLEMENTED
     %
-    function [block_dispatch] = gen_block_dispatch()   
+    function [dispatch] = generator_block_dispatch()   
         generation_blocks = table2array(readtable(CASE_SHEET, "sheet", "Gen"));
         assignin('base', 'gen_blocks', generation_blocks);
         % Return variable
         % Format is block 1 - 2 - 3 - 4 - 5 and will be percent utilization of that block
-        block_dispatch = [zeros, 8760; zeros, 8760; zeros, 8760; zeros, 8760; zeros, 8760;];;
+        dispatch = [zeros, 8760; zeros, 8760; zeros, 8760; zeros, 8760; zeros, 8760];
         gen_block_1 = [];
         gen_block_1_avail = 0;
         gen_block_2 = [];
@@ -119,14 +126,170 @@ tic;
                 gen_block_5_avail = gen_block_5_avail + generation_blocks(k,9);
             end
         end
-        
-        total_generation_avaliable = gen_block_1_avail + gen_block_2_avail + gen_block_3_avail + gen_block_4_avail + gen_block_5_avail;
 
-        % Logic to assign a generation block dispatch to the load curve for the year.
-        % This should be indexed off the base case and not calcuated at each time period
-        % 1) For each hour of load, compared to block 1.
-        % 2) If greater than block one, assign full block, otherwise assign partial of block 1 equal to load.
-        % 3) continue up to the blocks until dispatched generation = load
+        % Block debugging variables
+        assignin('base', 'block_1', gen_block_1);
+        assignin('base', 'block_2', gen_block_2);
+        assignin('base', 'block_3', gen_block_3);
+        assignin('base', 'block_4', gen_block_4);
+        assignin('base', 'block_5', gen_block_5);
+        
+        % Iterate through all hours and assign dispatch values to each hour from 1 to 8760
+        for k = 1:8760
+            for j = 1:height(generation_outages)
+                % Check if generation needs to be turned off for an outage
+                if (generation_outages(j,2) == k)
+                    block = generation_outages(j,4);
+                    gen = generation_outages(j,1);
+
+                    switch block
+                    case 1
+                        for b = 1:height(gen_block_1)
+                            if(gen_block_1(b,1) == gen)
+                                gen_block_1_avail = gen_block_1_avail - gen_block_1(b,3);
+                            end
+                        end
+                    case 2
+                        for b = 1:height(gen_block_2)
+                            if(gen_block_2(b,1) == gen)
+                                gen_block_2_avail = gen_block_2_avail - gen_block_2(b,3);
+                            end
+                        end
+                    case 3
+                        for b = 1:height(gen_block_3)
+                            if(gen_block_3(b,1) == gen)
+                                gen_block_3_avail = gen_block_3_avail - gen_block_3(b,3);
+                            end
+                        end
+                    case 4
+                        for b = 1:height(gen_block_4)
+                            if(gen_block_4(b,1) == gen)
+                                gen_block_4_avail = gen_block_4_avail - gen_block_4(b,3);
+                            end
+                        end
+                    case 5
+                        for b = 1:height(gen_block_5)
+                            if(gen_block_5(b,1) == gen)
+                                gen_block_5_avail = gen_block_5_avail - gen_block_5(b,3);
+                            end
+                        end
+                    end
+                end
+
+                % Check if generation needs to be turned on after an outage
+                if (generation_outages(j,2) + generation_outages(j,3) == k)
+                    block = generation_outages(j,4);
+                    gen = generation_outages(j,1);
+
+                    switch block
+                    case 1
+                        for b = 1:height(gen_block_1)
+                            if(gen_block_1(b,1) == gen)
+                                gen_block_1_avail = gen_block_1_avail + gen_block_1(b,3);
+                            end
+                        end
+                    case 2
+                        for b = 1:height(gen_block_2)
+                            if(gen_block_2(b,1) == gen)
+                                gen_block_2_avail = gen_block_2_avail + gen_block_2(b,3);
+                            end
+                        end
+                    case 3
+                        for b = 1:height(gen_block_3)
+                            if(gen_block_3(b,1) == gen)
+                                gen_block_3_avail = gen_block_3_avail + gen_block_3(b,3);
+                            end
+                        end
+                    case 4
+                        for b = 1:height(gen_block_4)
+                            if(gen_block_4(b,1) == gen)
+                                gen_block_4_avail = gen_block_4_avail + gen_block_4(b,3);
+                            end
+                        end
+                    case 5
+                        for b = 1:height(gen_block_5)
+                            if(gen_block_5(b,1) == gen)
+                                gen_block_5_avail = gen_block_5_avail + gen_block_5(b,3);
+                            end
+                        end
+                    end
+                end
+            end
+
+            % Compare load for this hour to the size of the availiable generation.
+            % Assign a percentage of the block generation to each hour.
+
+            current_load = load_data(k,1);
+            extra_gen = 0;
+            dispatch(k,1) = 0;
+            dispatch(k,2) = 0;
+            dispatch(k,3) = 0;
+            dispatch(k,4) = 0;
+            dispatch(k,5) = 0;
+
+            % Dispatch Block 1
+            if(current_load - gen_block_1_avail < 0)
+                extra_gen = gen_block_1_avail - current_load;
+                dispatch(k,1) = extra_gen / gen_block_1_avail;
+                current_load = 0;
+            elseif(current_load - gen_block_1_avail > 0)
+                current_load = current_load - gen_block_1_avail;
+                dispatch(k,1) = 1;
+            end
+
+            % Dispatch Block 2
+            if(current_load == 0)
+                dispatch(k,2) = 0;
+            elseif(current_load - gen_block_2_avail < 0)
+                extra_gen = gen_block_2_avail - current_load;
+                dispatch(k,2) = extra_gen / gen_block_2_avail;
+                current_load = 0;
+            elseif(current_load - gen_block_2_avail > 0)
+                current_load = current_load - gen_block_2_avail;
+                dispatch(k,2) = 1;
+            end
+
+            % Dispatch Block 3
+            if(current_load == 0)
+                dispatch(k,3) = 0;
+            elseif(current_load - gen_block_3_avail < 0)
+                extra_gen = gen_block_3_avail - current_load;
+                dispatch(k,3) = extra_gen / gen_block_3_avail;
+                current_load = 0;
+            elseif(current_load - gen_block_3_avail > 0)
+                current_load = current_load - gen_block_3_avail;
+                dispatch(k,3) = 1;
+            end
+
+            % Dispatch Block 4
+            if(current_load == 0)
+                dispatch(k,4) = 0;
+            elseif(current_load - gen_block_4_avail < 0)
+                extra_gen = gen_block_4_avail - current_load;
+                dispatch(k,4) = extra_gen / gen_block_4_avail;
+                current_load = 0;
+            elseif(current_load - gen_block_4_avail > 0)
+                current_load = current_load - gen_block_4_avail;
+                dispatch(k,4) = 1;
+            end
+
+            % Dispatch Block 5
+            if(current_load == 0)
+                dispatch(k,5) = 0;
+            elseif(current_load - gen_block_5_avail < 0)
+                extra_gen = gen_block_5_avail - current_load;
+                dispatch(k,5) = extra_gen / gen_block_5_avail;
+                current_load = 0;
+            elseif(current_load - gen_block_5_avail > 0)
+                current_load = current_load - gen_block_5_avail;
+                dispatch(k,5) = 1;
+            end
+
+            % Handle load being too high
+            if(current_load > 0)
+                warning('Load exceeds available generation for hour: %d', k);
+            end
+        end
     end
 
     %
@@ -138,6 +301,7 @@ tic;
     %generator outage
     function [generator_outage] = generator_outage(filename, tabname)
         generator_data = readtable(filename, "sheet", tabname);
+        gen_block_data = table2array(readtable(CASE_SHEET, "sheet", "Gen"));
         
         bus = table2array(generator_data(:,1));
         gen_start_dates = table2array(generator_data(:,4));
@@ -155,8 +319,16 @@ tic;
             end_hours(k) = gen_outage_duration(k) * 168;
         end
 
-        generator_outage = table(bus, transpose(start_hours), transpose(end_hours));
-        generator_outage = table2array (generator_outage);
+        generator_outage = table2array(table(bus, transpose(start_hours), transpose(end_hours)));
+
+        for k = 1:height(generator_outage)
+            for j = 1:height(gen_block_data)
+                if(gen_block_data(j,1) == generator_outage(k,1))
+                    generator_outage(k,4) = gen_block_data(j,22);
+                end
+            end
+        end
+        %generator_outage = table2array (generator_outage);
     end
     
     %n-1 contingency
