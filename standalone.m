@@ -237,11 +237,11 @@ tic;
             dispatch(k,5) = 0;
 
             % Dispatch Block 1
-            if(current_load == 0)
+            if(current_load <= 0)
                 dispatch(k,1) = 0;
             elseif(current_load - gen_block_1_avail < 0)
                 extra_gen = gen_block_1_avail - current_load;
-                dispatch(k,1) = extra_gen / gen_block_1_avail;
+                dispatch(k,1) = (gen_block_1_avail - extra_gen) / gen_block_1_avail;
                 current_load = 0;
             elseif(current_load - gen_block_1_avail > 0)
                 current_load = current_load - gen_block_1_avail;
@@ -249,11 +249,11 @@ tic;
             end
 
             % Dispatch Block 2
-            if(current_load == 0)
+            if(current_load <= 0)
                 dispatch(k,2) = 0;
             elseif(current_load - gen_block_2_avail < 0)
                 extra_gen = gen_block_2_avail - current_load;
-                dispatch(k,2) = extra_gen / gen_block_2_avail;
+                dispatch(k,2) = (gen_block_2_avail - extra_gen) / gen_block_2_avail;
                 current_load = 0;
             elseif(current_load - gen_block_2_avail > 0)
                 current_load = current_load - gen_block_2_avail;
@@ -261,11 +261,11 @@ tic;
             end
 
             % Dispatch Block 3
-            if(current_load == 0)
+            if(current_load <= 0)
                 dispatch(k,3) = 0;
             elseif(current_load - gen_block_3_avail < 0)
                 extra_gen = gen_block_3_avail - current_load;
-                dispatch(k,3) = extra_gen / gen_block_3_avail;
+                dispatch(k,3) = (gen_block_3_avail - extra_gen) / gen_block_3_avail;
                 current_load = 0;
             elseif(current_load - gen_block_3_avail > 0)
                 current_load = current_load - gen_block_3_avail;
@@ -273,11 +273,11 @@ tic;
             end
 
             % Dispatch Block 4
-            if(current_load == 0)
+            if(current_load <= 0)
                 dispatch(k,4) = 0;
             elseif(current_load - gen_block_4_avail < 0)
                 extra_gen = gen_block_4_avail - current_load;
-                dispatch(k,4) = extra_gen / gen_block_4_avail;
+                dispatch(k,4) = (gen_block_4_avail - extra_gen) / gen_block_4_avail;
                 current_load = 0;
             elseif(current_load - gen_block_4_avail > 0)
                 current_load = current_load - gen_block_4_avail;
@@ -285,11 +285,11 @@ tic;
             end
 
             % Dispatch Block 5
-            if(current_load == 0)
+            if(current_load <= 0)
                 dispatch(k,5) = 0;
             elseif(current_load - gen_block_5_avail < 0)
                 extra_gen = gen_block_5_avail - current_load;
-                dispatch(k,5) = extra_gen / gen_block_5_avail;
+                dispatch(k,5) = (gen_block_5_avail - extra_gen) / gen_block_5_avail;
                 current_load = 0;
             elseif(current_load - gen_block_5_avail > 0)
                 current_load = current_load - gen_block_5_avail;
@@ -386,7 +386,8 @@ tic;
                 temp_isl_mpc = extract_islands(tempmpc, 1);
 
                 % Need to replace with block dispatch
-                temp_isl_mpc.gen(:,2) = temp_isl_mpc.gen(:,2) * temp_load_data(k,2); %generation scaling
+                %temp_isl_mpc.gen(:,2) = temp_isl_mpc.gen(:,2) * temp_load_data(k,2); %generation scaling
+                temp_sil_mpc = gen_scale(temp_isl_mpc, block_dispatch, k);
 
                 temp_isl_mpc.bus(:,3) = temp_isl_mpc.bus(:,3) * temp_load_data(k,2); %Real Power scaling
                 temp_isl_mpc.bus(:,4) = temp_isl_mpc.bus(:,4) * temp_load_data(k,2); %Reactive power scaling
@@ -447,4 +448,9 @@ function limit_check_return = limits_check(mpc_case)
         end
     end
     assignin('base', 'VOLTAGE_SUCCESS_FLAG', voltage_success_flag);
+end
+
+%% Generation Scaling
+function scaled_generation = gen_scale(gen_mpc, gen_sheet, gen_hour)
+    scaled_generation = gen_mpc;
 end
