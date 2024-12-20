@@ -33,6 +33,11 @@ tic;
 
     % Generation Initilization
     generation_outages = generator_outage(OUTAGE_SHEET, 'Generation');
+    [gen_block_1, gen_block_1_avail] = generate_block(1);
+    [gen_block_2, gen_block_2_avail] = generate_block(2);
+    [gen_block_3, gen_block_3_avail] = generate_block(3);
+    [gen_block_4, gen_block_4_avail] = generate_block(4);
+    [gen_block_5, gen_block_5_avail] = generate_block(5);
     block_dispatch = generate_block_dispatch();
 
     % MATLAB debugging Variables
@@ -72,6 +77,22 @@ tic;
         end
     end
 
+    %% Generation Block Creator
+    function [g_block, g_avail] = generate_block(block)
+        g_blocks = table2array(readtable(CASE_SHEET, "sheet", "Gen"));
+        g_block = [];
+        g_avail = 0;
+
+        for k = 1:height(g_blocks)
+            if (g_blocks(k,22) == block)
+                g_block(end+1,1) = g_blocks(k,1);
+                g_block(end,2) = g_blocks(k,22);
+                g_block(end,3) = g_blocks(k,9);
+                g_avail = g_avail + g_blocks(k,9);
+            end
+        end
+    end
+
     %% Block Dispatch Generator
     function [dispatch] = generate_block_dispatch()
         % generate_block_dispatch Generate 8760x5 array of block weightings
@@ -86,54 +107,6 @@ tic;
         % Return variable
         % Format is block 1 - 2 - 3 - 4 - 5 and will be percent utilization of that block
         dispatch = [zeros, 8760; zeros, 8760; zeros, 8760; zeros, 8760; zeros, 8760];
-
-        gen_block_1 = [];
-        gen_block_1_avail = 0;
-        gen_block_2 = [];
-        gen_block_2_avail = 0;
-        gen_block_3 = [];
-        gen_block_3_avail = 0;
-        gen_block_4 = [];
-        gen_block_4_avail = 0;
-        gen_block_5 = [];
-        gen_block_5_avail = 0;
-
-        % Assign Generators to blocks
-        %{
-            gen_block_1->5 format:
-            column 1: bus location
-            column 2: dispatch block
-            column 3: real power value of generator
-        %}
-        for k = 1:height(generation_blocks)
-            switch generation_blocks(k,22)
-            case 1
-                gen_block_1(end+1,1) = generation_blocks(k,1);
-                gen_block_1(end,2) = generation_blocks(k,22);
-                gen_block_1(end,3) = generation_blocks(k,9);
-                gen_block_1_avail = gen_block_1_avail + generation_blocks(k,9);
-            case 2
-                gen_block_2(end+1,1) = generation_blocks(k,1);
-                gen_block_2(end,2) = generation_blocks(k,22);
-                gen_block_2(end,3) = generation_blocks(k,9);
-                gen_block_2_avail = gen_block_2_avail + generation_blocks(k,9);
-            case 3
-                gen_block_3(end+1,1) = generation_blocks(k,1);
-                gen_block_3(end,2) = generation_blocks(k,22);
-                gen_block_3(end,3) = generation_blocks(k,9);
-                gen_block_3_avail = gen_block_3_avail + generation_blocks(k,9);
-            case 4
-                gen_block_4(end+1,1) = generation_blocks(k,1);
-                gen_block_4(end,2) = generation_blocks(k,22);
-                gen_block_4(end,3) = generation_blocks(k,9);
-                gen_block_4_avail = gen_block_4_avail + generation_blocks(k,9);
-            case 5
-                gen_block_5(end+1,1) = generation_blocks(k,1);
-                gen_block_5(end,2) = generation_blocks(k,22);
-                gen_block_5(end,3) = generation_blocks(k,9);
-                gen_block_5_avail = gen_block_5_avail + generation_blocks(k,9);
-            end% End Switch
-        end% End For Loop
 
         % Block debugging variables
         assignin('base', 'block_1', gen_block_1);
@@ -387,7 +360,7 @@ tic;
 
                 % Need to replace with block dispatch
                 %temp_isl_mpc.gen(:,2) = temp_isl_mpc.gen(:,2) * temp_load_data(k,2); %generation scaling
-                temp_sil_mpc = gen_scale(temp_isl_mpc, block_dispatch, k);
+                temp_isl_mpc = gen_scale(temp_isl_mpc, block_dispatch, k, gen_block_1, gen_block_2, gen_block_3, gen_block_4, gen_block_5);
 
                 temp_isl_mpc.bus(:,3) = temp_isl_mpc.bus(:,3) * temp_load_data(k,2); %Real Power scaling
                 temp_isl_mpc.bus(:,4) = temp_isl_mpc.bus(:,4) * temp_load_data(k,2); %Reactive power scaling
@@ -451,6 +424,66 @@ function limit_check_return = limits_check(mpc_case)
 end
 
 %% Generation Scaling
-function scaled_generation = gen_scale(gen_mpc, gen_sheet, gen_hour)
+function scaled_generation = gen_scale(gen_mpc, gen_scaling, gen_hour, block_1, block_2, block_3, block_4, block_5)
     scaled_generation = gen_mpc;
+    selector = 0;
+
+    for blk = 1:height(scaled_generation.gen)
+        if(selector == 0)
+            for a = 1:height(block_1)
+                if(scaled_generation.gen(blk,1) == block_1(a,1) && gen_scaling(gen_hour, 1) > 0)
+                    scaled_generation.gen(blk,2) = scaled_generation.gen(blk,2) * gen_scaling(gen_hour, 1);
+                    selector = 1;
+                elseif(scaled_generation.gen(blk,1) == block_1(a,1) && gen_scaling(gen_hour, 1) <= 0)
+                    scaled_generation.gen(blk,8) = 0;
+                    selector = 1;
+                end
+            end
+        end
+        if(selector == 0)
+            for a = 1:height(block_2)
+                if(scaled_generation.gen(blk,1) == block_2(a,1) && gen_scaling(gen_hour, 2) > 0)
+                    scaled_generation.gen(blk,2) = scaled_generation.gen(blk,2) * gen_scaling(gen_hour, 2);
+                    selector = 1;
+                elseif(scaled_generation.gen(blk,1) == block_2(a,1) && gen_scaling(gen_hour, 2) <= 0)
+                    scaled_generation.gen(blk,8) = 0;
+                    selector = 1;
+                end
+            end
+        end
+        if(selector == 0)
+            for a = 1:height(block_3)
+                if(scaled_generation.gen(blk,1) == block_3(a,1) && gen_scaling(gen_hour, 3) > 0)
+                    scaled_generation.gen(blk,2) = scaled_generation.gen(blk,2) * gen_scaling(gen_hour, 3);
+                    selector = 1;
+                elseif(scaled_generation.gen(blk,1) == block_3(a,1) && gen_scaling(gen_hour, 3) <= 0)
+                    scaled_generation.gen(blk,8) = 0;
+                    selector = 1;
+                end
+            end
+        end
+        if(selector == 0)
+            for a = 1:height(block_4)
+                if(scaled_generation.gen(blk,1) == block_4(a,1) && gen_scaling(gen_hour, 4) > 0)
+                    scaled_generation.gen(blk,2) = scaled_generation.gen(blk,2) * gen_scaling(gen_hour, 4);
+                    selector = 1;
+                elseif(scaled_generation.gen(blk,1) == block_4(a,1) && gen_scaling(gen_hour, 4) <= 0)
+                    scaled_generation.gen(blk,8) = 0;
+                    selector = 1;
+                end
+            end
+        end
+        if(selector == 0)
+            for a = 1:height(block_5)
+                if(scaled_generation.gen(blk,1) == block_5(a,1) && gen_scaling(gen_hour, 5) > 0)
+                    scaled_generation.gen(blk,2) = scaled_generation.gen(blk,2) * gen_scaling(gen_hour, 5);
+                    selector = 1;
+                elseif(scaled_generation.gen(blk,1) == block_5(a,1) && gen_scaling(gen_hour, 5) <= 0)
+                    scaled_generation.gen(blk,8) = 0;
+                    selector = 1;
+                end
+            end
+        end
+        selector = 0;
+    end
 end
