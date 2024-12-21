@@ -58,10 +58,7 @@ tic;
         4) If schedule fails, regenerate schedule and make sure it is not the same schedule
     %}
 
-    %
-    % NOT YET IMPLEMENTED
-    %
-    %% Base Case Simulation
+    %% Base Case NYI
     function [base_case] = base_schedule_case(schedule)
         % Obtain the ranges that will be simulated from the schedule.
         % This avoids running hours again after the original N-1 contingency that do not need to be reran
@@ -276,12 +273,14 @@ tic;
         end
     end
 
-    %
-    % NOT YET IMPLEMENTED
-    %
-    %% error_handler
+    %% error_handler NYI
     function error_handler()
     end
+
+
+
+
+
 
     %%generator outage
     function [generator_outage] = generator_outage(filename, tabname)
@@ -313,7 +312,6 @@ tic;
                 end
             end
         end
-        %generator_outage = table2array (generator_outage);
     end
     
     %%n-1 contingency
@@ -321,9 +319,6 @@ tic;
         results_array = [zeros,8760;zeros,height(mpc.branch)];
 
         for k = starthour:endhour
-            if(mod(k, 10) == 0)
-                disp(k);
-            end
             %temporary variables for parallel functionality 
             tempmpc = mpc;
             temp_generation_outages = generation_outages;
@@ -358,10 +353,10 @@ tic;
 
                 temp_isl_mpc = extract_islands(tempmpc, 1);
 
-                % Need to replace with block dispatch
-                %temp_isl_mpc.gen(:,2) = temp_isl_mpc.gen(:,2) * temp_load_data(k,2); %generation scaling
+                %block dispatch
                 temp_isl_mpc = gen_scale(temp_isl_mpc, block_dispatch, k, gen_block_1, gen_block_2, gen_block_3, gen_block_4, gen_block_5);
-
+                
+                %load scaling
                 temp_isl_mpc.bus(:,3) = temp_isl_mpc.bus(:,3) * temp_load_data(k,2); %Real Power scaling
                 temp_isl_mpc.bus(:,4) = temp_isl_mpc.bus(:,4) * temp_load_data(k,2); %Reactive power scaling
 
