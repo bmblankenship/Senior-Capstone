@@ -383,12 +383,11 @@ end
 
 %%limits calculation
 function limit_check_return = limits_check(mpc_case)
-    limit_check_return = 1;
+    limit_check_return = "11";
 
     MVA_success_flag = true;
     for n = 1:height(mpc_case.branch)
         if(~MVA_success_flag)
-            limit_check_return = 0;
             break;
         elseif(MVA_success_flag)
             s1 = sqrt(mpc_case.branch(n,14)^2 + mpc_case.branch(n,15)^2);
@@ -404,18 +403,31 @@ function limit_check_return = limits_check(mpc_case)
             end
         end
     end
-    assignin('base', 'MVA_SUCCESS_FLAG', MVA_success_flag);
 
     voltage_success_flag = true;
     for n = 1:height(mpc_case.gen)
         if(~voltage_success_flag)
-            limit_check_return = 0;
             break;
         elseif(mpc_case.bus(n,8) >= 1.1 && mpc_case.bus(n,8) <= 0.9)
             voltage_success_flag = false;
         end
     end
+
+    % Return format
+    % MSB = Voltage Magnitude
+    % LSB = MVA Magnitude
+    if(~voltage_success_flag && ~MVA_success_flag)
+        limit_check_return = "00";
+    elseif(voltage_success_flag && ~MVA_success_flag)
+        limit_check_return = "10";
+    elseif(~voltage_success_flag && MVA_success_flag)
+        limit_check_return = "01";
+    else
+        limit_check_return = "11";
+    end
+
     assignin('base', 'VOLTAGE_SUCCESS_FLAG', voltage_success_flag);
+    assignin('base', 'MVA_SUCCESS_FLAG', MVA_success_flag);
 end
 
 %% Generation Scaling
@@ -428,6 +440,7 @@ function scaled_generation = gen_scale(gen_mpc, gen_scaling, gen_hour, block_1, 
             for a = 1:height(block_1)
                 if(scaled_generation.gen(blk,1) == block_1(a,1) && gen_scaling(gen_hour, 1) > 0)
                     scaled_generation.gen(blk,2) = scaled_generation.gen(blk,2) * gen_scaling(gen_hour, 1);
+                    scaled_generation.gen(blk,3) = scaled_generation.gen(blk,3) * gen_scaling(gen_hour, 1);
                     selector = 1;
                 elseif(scaled_generation.gen(blk,1) == block_1(a,1) && gen_scaling(gen_hour, 1) <= 0)
                     scaled_generation.gen(blk,8) = 0;
@@ -439,6 +452,7 @@ function scaled_generation = gen_scale(gen_mpc, gen_scaling, gen_hour, block_1, 
             for a = 1:height(block_2)
                 if(scaled_generation.gen(blk,1) == block_2(a,1) && gen_scaling(gen_hour, 2) > 0)
                     scaled_generation.gen(blk,2) = scaled_generation.gen(blk,2) * gen_scaling(gen_hour, 2);
+                    scaled_generation.gen(blk,3) = scaled_generation.gen(blk,3) * gen_scaling(gen_hour, 2);
                     selector = 1;
                 elseif(scaled_generation.gen(blk,1) == block_2(a,1) && gen_scaling(gen_hour, 2) <= 0)
                     scaled_generation.gen(blk,8) = 0;
@@ -450,6 +464,7 @@ function scaled_generation = gen_scale(gen_mpc, gen_scaling, gen_hour, block_1, 
             for a = 1:height(block_3)
                 if(scaled_generation.gen(blk,1) == block_3(a,1) && gen_scaling(gen_hour, 3) > 0)
                     scaled_generation.gen(blk,2) = scaled_generation.gen(blk,2) * gen_scaling(gen_hour, 3);
+                    scaled_generation.gen(blk,3) = scaled_generation.gen(blk,3) * gen_scaling(gen_hour, 3);
                     selector = 1;
                 elseif(scaled_generation.gen(blk,1) == block_3(a,1) && gen_scaling(gen_hour, 3) <= 0)
                     scaled_generation.gen(blk,8) = 0;
@@ -461,6 +476,7 @@ function scaled_generation = gen_scale(gen_mpc, gen_scaling, gen_hour, block_1, 
             for a = 1:height(block_4)
                 if(scaled_generation.gen(blk,1) == block_4(a,1) && gen_scaling(gen_hour, 4) > 0)
                     scaled_generation.gen(blk,2) = scaled_generation.gen(blk,2) * gen_scaling(gen_hour, 4);
+                    scaled_generation.gen(blk,3) = scaled_generation.gen(blk,3) * gen_scaling(gen_hour, 4);
                     selector = 1;
                 elseif(scaled_generation.gen(blk,1) == block_4(a,1) && gen_scaling(gen_hour, 4) <= 0)
                     scaled_generation.gen(blk,8) = 0;
@@ -472,6 +488,7 @@ function scaled_generation = gen_scale(gen_mpc, gen_scaling, gen_hour, block_1, 
             for a = 1:height(block_5)
                 if(scaled_generation.gen(blk,1) == block_5(a,1) && gen_scaling(gen_hour, 5) > 0)
                     scaled_generation.gen(blk,2) = scaled_generation.gen(blk,2) * gen_scaling(gen_hour, 5);
+                    scaled_generation.gen(blk,3) = scaled_generation.gen(blk,3) * gen_scaling(gen_hour, 5);
                     selector = 1;
                 elseif(scaled_generation.gen(blk,1) == block_5(a,1) && gen_scaling(gen_hour, 5) <= 0)
                     scaled_generation.gen(blk,8) = 0;
