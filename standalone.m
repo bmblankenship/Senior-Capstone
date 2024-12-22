@@ -106,12 +106,12 @@ tic;
         dispatch = [zeros, 8760; zeros, 8760; zeros, 8760; zeros, 8760; zeros, 8760];
 
         % Block debugging variables
-        assignin('base', 'block_1', gen_block_1);
-        assignin('base', 'block_2', gen_block_2);
-        assignin('base', 'block_3', gen_block_3);
-        assignin('base', 'block_4', gen_block_4);
-        assignin('base', 'block_5', gen_block_5);
-        assignin('base', 'gen_blocks', generation_blocks);
+        assignin('base', 'gen_block_1', gen_block_1);
+        assignin('base', 'gen_block_2', gen_block_2);
+        assignin('base', 'gen_block_3', gen_block_3);
+        assignin('base', 'gen_block_4', gen_block_4);
+        assignin('base', 'gen_block_5', gen_block_5);
+        assignin('base', 'generation_blocks', generation_blocks);
         
         % Iterate through all hours and assign dispatch values to each hour from 1 to 8760
         for k = 1:8760
@@ -383,7 +383,6 @@ end
 
 %%limits calculation
 function limit_check_return = limits_check(mpc_case)
-    limit_check_return = "11";
 
     MVA_success_flag = true;
     for n = 1:height(mpc_case.branch)
