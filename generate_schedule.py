@@ -7,15 +7,22 @@ import pylightxl as xl
 
 class Outage:
     """
+    class used to store pertinent information about outages
+    will need to be expanded to accommodate the functionality we need
     """
-    def __init__(self, duration, branch):
-        self.duration = duration
+    def __init__(self, out_duration, branch):
+        self.duration = out_duration
         self.branch = branch
-        self.concurrancy = None
+        self.concurrency = None
 
-    def set_concurrancy(self, branches):
-        for i, branch in branches:
-            self.concurrancy[i] = branch
+    def set_concurrency(self, con_branches, min_overlap):
+        """
+        array con_branches: array of branches that will be out concurrently
+        integer min_overlap: integer value of minimum time overlap required for concurrent outage
+        """
+        for a, branch in con_branches:
+            self.concurrency[a,0] = branch
+            self.concurrency[a,1] = min_overlap
 
 # We will need to get the sheet location into here at some point
 # Likely will require some integration with the GUI
