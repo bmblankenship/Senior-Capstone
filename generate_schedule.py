@@ -17,7 +17,7 @@ class Outage:
 
     def set_concurrency(self, con_branches, min_overlap):
         """
-        array con_branches: array of branches that will be out concurrently
+        list con_branches: list of branches that will be out concurrently eg: branch 1 and 2 would be [1, 2]
         integer min_overlap: integer value of minimum time overlap required for concurrent outage
         """
         for a, branch in con_branches:
