@@ -5,6 +5,25 @@ import pylightxl as xl
 
 """This file will take input of an excel sheet and generate a schedule for MATPOWER to run powerflow checks on."""
 
+class Outage:
+    """
+    class used to store pertinent information about outages
+    will need to be expanded to accommodate the functionality we need
+    """
+    def __init__(self, out_duration, branch):
+        self.duration = out_duration
+        self.branch = branch
+        self.concurrency = None
+
+    def set_concurrency(self, con_branches, min_overlap):
+        """
+        list con_branches: list of branches that will be out concurrently eg: branch 1 and 2 would be [1, 2]
+        integer min_overlap: integer value of minimum time overlap required for concurrent outage
+        """
+        for a, branch in con_branches:
+            self.concurrency[a,0] = branch
+            self.concurrency[a,1] = min_overlap
+
 # We will need to get the sheet location into here at some point
 # Likely will require some integration with the GUI
 sheet = xl.readxl(fn='RequiredOutages.xlsx' , ws='Transmission')
