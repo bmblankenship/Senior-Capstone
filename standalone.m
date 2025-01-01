@@ -317,7 +317,7 @@ tic;
     
     %%n-1 contingency
     function [results_array, mpc_array] = n1_contingency(starthour,endhour,lineout) 
-        results_array = [zeros,8760;zeros,height(mpc.branch)];
+        %results_array = [zeros,8760;zeros,height(mpc.branch)];
 
         for k = starthour:endhour
             %temporary variables for parallel functionality 
@@ -363,11 +363,8 @@ tic;
 
                 results = runpf_wcu(temp_isl_mpc, mpopt);
                 results_array(k,n) = limits_check(results);
-                mpc_array(k,n) = temp_isl_mpc;
+                mpc_array(k,n) = results;
                 
-                if(results_array(k,n) == 0)
-                    assignin('base', 'global_success', 0);
-                end
                 tempmpc.branch(n,11) = 1;
 
             end %for loop
@@ -384,7 +381,7 @@ toc;
 end
 
 %%limits calculation
-function [limit_check_return] = limits_check(mpc_case)
+function limit_check_return = limits_check(mpc_case)
 
     MVA_success_flag = true;
     MVA_failure_branch = 'P';
@@ -401,7 +398,7 @@ function [limit_check_return] = limits_check(mpc_case)
             end
 
             if(apparent_power > mpc_case.branch(n,6))
-                MVA_failure_branch = int2str(n);
+                MVA_failure_branch = n;
                 MVA_success_flag = false;
             end
         end
@@ -413,7 +410,7 @@ function [limit_check_return] = limits_check(mpc_case)
         if(~voltage_success_flag)
             break;
         elseif(mpc_case.bus(n,8) >= 1.1 && mpc_case.bus(n,8) <= 0.9)
-            voltage_failure_bus = int2str(n);
+            voltage_failure_bus = n;
             voltage_success_flag = false;
         end
     end
@@ -422,13 +419,25 @@ function [limit_check_return] = limits_check(mpc_case)
     % MSB = Voltage Magnitude
     % LSB = MVA Magnitude
     if(~voltage_success_flag && ~MVA_success_flag)
-        limit_check_return = strcat("00", failures);
+        limit_check_return.MVA = 0;
+        limit_check_return.MAG = 0;
+        limit_check_return.MVA_Branch = MVA_failure_branch;
+        limit_check_return.MAG_Bus = voltage_failure_bus;
     elseif(voltage_success_flag && ~MVA_success_flag)
-        limit_check_return = strcat("10", failures);
+        limit_check_return.MVA = 0;
+        limit_check_return.MAG = 1;
+        limit_check_return.MVA_Branch = MVA_failure_branch;
+        limit_check_return.MAG_Bus = voltage_failure_bus;
     elseif(~voltage_success_flag && MVA_success_flag)
-        limit_check_return = strcat("01", failures);
+        limit_check_return.MVA = 1;
+        limit_check_return.MAG = 0;
+        limit_check_return.MVA_Branch = MVA_failure_branch;
+        limit_check_return.MAG_Bus = voltage_failure_bus;
     else
-        limit_check_return = strcat("11", failures);
+        limit_check_return.MVA = 1;
+        limit_check_return.MAG = 1;
+        limit_check_return.MVA_Branch = MVA_failure_branch;
+        limit_check_return.MAG_Bus = voltage_failure_bus;
     end
 
     assignin('base', 'VOLTAGE_SUCCESS_FLAG', voltage_success_flag);
