@@ -362,7 +362,7 @@ tic;
                 temp_isl_mpc.bus(:,4) = temp_isl_mpc.bus(:,4) * temp_load_data(k,2); %Reactive power scaling
 
                 results = runpf_wcu(temp_isl_mpc, mpopt);
-                results_array(k,n) = limits_check(results);
+                results_array{k,n} = limits_check(results);
                 mpc_array(k,n) = results;
                 
                 tempmpc.branch(n,11) = 1;
@@ -381,7 +381,7 @@ toc;
 end
 
 %%limits calculation
-function limit_check_return = limits_check(mpc_case)
+function [limit_check_return] = limits_check(mpc_case)
 
     MVA_success_flag = true;
     MVA_failure_branch = 'P';
@@ -398,7 +398,7 @@ function limit_check_return = limits_check(mpc_case)
             end
 
             if(apparent_power > mpc_case.branch(n,6))
-                MVA_failure_branch = n;
+                MVA_failure_branch = int2str(n);
                 MVA_success_flag = false;
             end
         end
@@ -410,38 +410,22 @@ function limit_check_return = limits_check(mpc_case)
         if(~voltage_success_flag)
             break;
         elseif(mpc_case.bus(n,8) >= 1.1 && mpc_case.bus(n,8) <= 0.9)
-            voltage_failure_bus = n;
+            voltage_failure_bus = int2str(n);
             voltage_success_flag = false;
         end
     end
-    failures = strcat(voltage_failure_bus, MVA_failure_branch);
+    
     % Return format
-    % MSB = Voltage Magnitude
-    % LSB = MVA Magnitude
+    % VMag MVAMag Bus Branch
     if(~voltage_success_flag && ~MVA_success_flag)
-        limit_check_return.MVA = 0;
-        limit_check_return.MAG = 0;
-        limit_check_return.MVA_Branch = MVA_failure_branch;
-        limit_check_return.MAG_Bus = voltage_failure_bus;
+        limit_check_return = append('0 0 ', voltage_failure_bus, ' ', MVA_failure_branch);
     elseif(voltage_success_flag && ~MVA_success_flag)
-        limit_check_return.MVA = 0;
-        limit_check_return.MAG = 1;
-        limit_check_return.MVA_Branch = MVA_failure_branch;
-        limit_check_return.MAG_Bus = voltage_failure_bus;
+        limit_check_return = append('1 0 ', voltage_failure_bus, ' ', MVA_failure_branch);
     elseif(~voltage_success_flag && MVA_success_flag)
-        limit_check_return.MVA = 1;
-        limit_check_return.MAG = 0;
-        limit_check_return.MVA_Branch = MVA_failure_branch;
-        limit_check_return.MAG_Bus = voltage_failure_bus;
+        limit_check_return = append('0 1 ', voltage_failure_bus, ' ', MVA_failure_branch);
     else
-        limit_check_return.MVA = 1;
-        limit_check_return.MAG = 1;
-        limit_check_return.MVA_Branch = MVA_failure_branch;
-        limit_check_return.MAG_Bus = voltage_failure_bus;
+        limit_check_return = append('1 1 ', voltage_failure_bus, ' ', MVA_failure_branch);
     end
-
-    assignin('base', 'VOLTAGE_SUCCESS_FLAG', voltage_success_flag);
-    assignin('base', 'MVA_SUCCESS_FLAG', MVA_success_flag);
 end
 
 %% Generation Scaling
