@@ -12,6 +12,10 @@
     standalone(0, 'RequiredOutages.xlsx', 'HourlyLoad.xlsx', 'NR-SH', 'case118_CAPER_PeakLoad.m', 5, 1, 'InitialCaseData.xlsx');
 %}
 
+% mpc.gen(:,2)=mpc.gen(:,2); %generation scaling
+% mpc.bus(:,3)=mpc.bus(:,3); %Real Power scaling
+% mpc.bus(:,4)=mpc.bus(:,4); %Reactive power scaling
+
 %% Initialization
 function standalone(VERBOSE, OUTAGE_SHEET, LOAD_SHEET, ALGORITHM_TYPE, CASE_NAME, SIMULATION_HOURS, SIM_START_HOUR, CASE_SHEET)
 tic;
@@ -19,10 +23,6 @@ tic;
         warning('Simulation Hours Specified are out of range (>8760). Setting to 8760.');
         SIMULATION_HOURS = 8760;
     end
-    
-    % mpc.gen(:,2)=mpc.gen(:,2); %generation scaling
-    % mpc.bus(:,3)=mpc.bus(:,3); %Real Power scaling
-    % mpc.bus(:,4)=mpc.bus(:,4); %Reactive power scaling
     
     % Options Initilization
     mpopt = mpoption('pf.alg', ALGORITHM_TYPE, 'verbose', VERBOSE);
@@ -72,6 +72,25 @@ tic;
         base_case_end_hours = schedule(end_time);
 
         for i = 1:length(base_case_branch_outages) % Index through branches
+        end
+    end
+
+    %% Single Branch Outage NYI
+    function [single_outage] = single_outage(branch, starthour, endhour)
+        temp_outage_mpc = mpc;
+        temp_outage_mpc.branch(branch,11) = 0;
+        temp_outage_mpc = extract_islands(temp_outage_mpc, 1);
+
+        % Need to add logic for generation outages still
+
+        for i = starthour:endhour
+            %block dispatch
+            temp_outage_mpc = gen_scale(temp_isl_mpc, block_dispatch, i, gen_block_1, gen_block_2, gen_block_3, gen_block_4, gen_block_5);
+            %load scaling
+            temp_outage_mpc.bus(:,3) = temp_isl_mpc.bus(:,3) * temp_load_data(k,2); %Real Power scaling
+            temp_outage_mpc.bus(:,4) = temp_isl_mpc.bus(:,4) * temp_load_data(k,2); %Reactive power scaling
+            results = runpf_wcu(temp_outage_mpc, mpopt);
+            single_outage[i] = limits_check(results);
         end
     end
 
