@@ -12,3 +12,7 @@ N/A
 
 <h2>Examples:</h2>
 N/A
+
+<h2>Sponsor:</h2>
+This project is sponsered by the Center for Advanced Power Engineering Research (CAPER).
+https://caper-usa.com/
