@@ -6,7 +6,7 @@ classdef generation_block
         block_table
     end
     methods (Access = public)
-        function this = generation_block(busses, capacity, total_capacity, case_sheet, block)
+        function this = generation_block(case_sheet, block)
             this.block_table = table2array(readtable(case_sheet, "sheet", "Gen"));
             this.busses = index_busses(this, block, this.block_table);
             this.capacity = index_capacity(this, block, this.block_table);
