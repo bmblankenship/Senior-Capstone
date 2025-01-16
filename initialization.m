@@ -9,15 +9,15 @@
     CASE_SHEET: The Excel sheet containing the original case data
 
     example function call:
-    initialization(0, 'RequiredOutages.xlsx', 'HourlyLoad.xlsx', 'NR-SH', 'case118_CAPER_PeakLoad.m', 5, 1, 'InitialCaseData.xlsx');
+    initialization(0, 'RequiredOutages.xlsx', 'HourlyLoad.xlsx', 'NR-SH', 'case118_CAPER_PeakLoad.m', 5, 1, 'InitialCaseData.xlsx', false);
 %}
 
 function initialization(VERBOSE, OUTAGE_SHEET, LOAD_SHEET, ALGORITHM_TYPE, CASE_NAME, SIMULATION_HOURS, SIM_START_HOUR, CASE_SHEET, BLOCK_DISPATCH)
     tic; 
     if nargin == 0
-        sim_settings = settings();
+        sim_settings = local_settings();
     else
-        sim_settings = settings(VERBOSE, OUTAGE_SHEET, LOAD_SHEET, ALGORITHM_TYPE, CASE_NAME, SIMULATION_HOURS, SIM_START_HOUR, CASE_SHEET, BLOCK_DISPATCH);
+        sim_settings = local_settings(VERBOSE, OUTAGE_SHEET, LOAD_SHEET, ALGORITHM_TYPE, CASE_NAME, SIMULATION_HOURS, SIM_START_HOUR, CASE_SHEET, BLOCK_DISPATCH);
     end
 
     if(sim_settings.simulation_hours > 8760)
@@ -38,14 +38,18 @@ function initialization(VERBOSE, OUTAGE_SHEET, LOAD_SHEET, ALGORITHM_TYPE, CASE_
     
     % Generation Initilization
     generation_outages = generator_outage(sim_settings);
-    if(settings.block_dispatch == true)
+    if(sim_settings.block_dispatch == true)
         gen_block_1 = generation_block(sim_settings, 1);
         gen_block_2 = generation_block(sim_settings, 2);
         gen_block_3 = generation_block(sim_settings, 3);
         gen_block_4 = generation_block(sim_settings, 4);
         gen_block_5 = generation_block(sim_settings, 5);
+        gen_array = [gen_block_1; gen_block_2; gen_block_3; gen_block_4; gen_block_5];
         block_dispatch = generate_block_dispatch(sim_settings, gen_block_1, gen_block_2, gen_block_3, gen_block_4, gen_block_5, load_data, generation_outages);
         assignin('base', 'block_dispatch', block_dispatch);
+    else
+        gen_array = 0;
+        block_dispatch = 0;
     end
     
     % MATLAB debugging Variables
@@ -54,7 +58,7 @@ function initialization(VERBOSE, OUTAGE_SHEET, LOAD_SHEET, ALGORITHM_TYPE, CASE_
     assignin('base', 'load_data', load_data);
     
     %initial N-1 contingency to verify health of the system with planned generator outages
-    [initial_results_array, initial_mpc_array] = n1_contingency(SIM_START_HOUR, SIMULATION_HOURS, -1);
+    [initial_results_array, initial_mpc_array] = n1_contingency(sim_settings, -1, generation_outages, load_data, mpc, gen_array, block_dispatch, mpopt);
     assignin('base', 'initial_results_array', initial_results_array);
     assignin('base', 'initial_mpc_array', initial_mpc_array);
     

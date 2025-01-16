@@ -1,8 +1,7 @@
 %%n-1 contingency
-function [results_array, mpc_array] = n1_contingency(starthour,endhour,lineout) 
-    %results_array = [zeros,8760;zeros,height(mpc.branch)];
+function [results_array, mpc_array] = n1_contingency(settings, lineout, generation_outages, load_data, mpc, gen_array, block_dispatch, mpopt) 
 
-    for k = starthour:endhour
+    for k = settings.start_hour:settings.simulation_hours
         %temporary variables for parallel functionality 
         tempmpc = mpc;
         temp_generation_outages = generation_outages;
@@ -38,7 +37,12 @@ function [results_array, mpc_array] = n1_contingency(starthour,endhour,lineout)
             temp_isl_mpc = extract_islands(tempmpc, 1);
 
             %block dispatch
-            temp_isl_mpc = gen_scale(temp_isl_mpc, block_dispatch, k, gen_block_1, gen_block_2, gen_block_3, gen_block_4, gen_block_5);
+            if(settings.block_dispatch == true)
+                temp_isl_mpc = gen_scale(temp_isl_mpc, block_dispatch, k, gen_array(1), gen_array(2), gen_array(3), gen_array(4), gen_array(5));
+            else
+                temp_isl_mpc.gen(:,2) = temp_isl_mpc.gen(:,2) * temp_load_data(k,2);
+                temp_isl_mpc.gen(:,3) = temp_isl_mpc.gen(:,3) * temp_load_data(k,2);
+            end
             
             %load scaling
             temp_isl_mpc.bus(:,3) = temp_isl_mpc.bus(:,3) * temp_load_data(k,2); %Real Power scaling

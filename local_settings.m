@@ -1,4 +1,4 @@
-classdef settings
+classdef local_settings
     properties
         verbose
         outage_sheet
@@ -12,28 +12,28 @@ classdef settings
     end
 
     methods
-        function this = settings(verbose, outage, load, alg, cname, hours, start, csheet, dispatch)
-            if nargin == 0
-                this.verbose = 0;
-                this.outage_sheet = 'RequiredOutages.xlsx';
-                this.load_sheet = 'HourlyLoad.xlsx';
-                this.algorithm = 'NR-SH';
-                this.case_name = 'case118_CAPER_PeakLoad.m';
-                this.simulation_hours = 5;
-                this.start_hour = 1;
-                this.case_sheet = 'InitialCaseData.xlsx';
-                this.block_dispatch = false;
-            else
-                this.verbose = verbose;
-                this.outage_sheet = outage;
-                this.load_sheet = load;
-                this.algorithm = alg;
-                this.case_name = cname;
-                this.simulation_hours = hours;
-                this.start_hour = start;
-                this.case_sheet = csheet;
-                this.block_dispatch = dispatch;
-            end
+        % function this = local_settings()
+        %     this.verbose = 0;
+        %     this.outage_sheet = 'RequiredOutages.xlsx';
+        %     this.load_sheet = 'HourlyLoad.xlsx';
+        %     this.algorithm = 'NR-SH';
+        %     this.case_name = 'case118_CAPER_PeakLoad.m';
+        %     this.simulation_hours = 5;
+        %     this.start_hour = 1;
+        %     this.case_sheet = 'InitialCaseData.xlsx';
+        %     this.block_dispatch = false;
+        % end
+
+        function this = local_settings(verbose, outage, load, alg, cname, hours, start, csheet, dispatch)
+            this.verbose = verbose;
+            this.outage_sheet = outage;
+            this.load_sheet = load;
+            this.algorithm = alg;
+            this.case_name = cname;
+            this.simulation_hours = hours;
+            this.start_hour = start;
+            this.case_sheet = csheet;
+            this.block_dispatch = dispatch;
         end
     end
 end
