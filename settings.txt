@@ -1,0 +1,28 @@
+*** SETTINGS FILE *** 
+
+*** VERBOSE ***
+0
+
+*** OUTAGE ***
+RequiredOutages.xlsx
+
+*** LOAD ***
+HourlyLoad.xlsx
+
+*** ALGORITHM ***
+NR-SH
+
+*** CASE NAME ***
+case118_CAPER_PeakLoad.m
+
+*** SIMULATION HOURS ***
+5
+
+*** START HOUR ***
+1
+
+*** CASE DATA ***
+InitialCaseData.xlsx
+
+*** BLOCK DISPATCH ***
+false

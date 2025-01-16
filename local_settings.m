@@ -12,28 +12,22 @@ classdef local_settings
     end
 
     methods
-        % function this = local_settings()
-        %     this.verbose = 0;
-        %     this.outage_sheet = 'RequiredOutages.xlsx';
-        %     this.load_sheet = 'HourlyLoad.xlsx';
-        %     this.algorithm = 'NR-SH';
-        %     this.case_name = 'case118_CAPER_PeakLoad.m';
-        %     this.simulation_hours = 5;
-        %     this.start_hour = 1;
-        %     this.case_sheet = 'InitialCaseData.xlsx';
-        %     this.block_dispatch = false;
-        % end
-
-        function this = local_settings(verbose, outage, load, alg, cname, hours, start, csheet, dispatch)
-            this.verbose = verbose;
-            this.outage_sheet = outage;
-            this.load_sheet = load;
-            this.algorithm = alg;
-            this.case_name = cname;
-            this.simulation_hours = hours;
-            this.start_hour = start;
-            this.case_sheet = csheet;
-            this.block_dispatch = dispatch;
+        function this = local_settings()
+            fid = fopen('settings.txt');
+            this.verbose = cell2mat(textscan(fid, '%d', 1, 'delimiter', '\n', 'headerlines', 3));
+            this.outage_sheet = string(textscan(fid, '%q', 1, 'delimiter', '\n', 'headerlines', 2));
+            this.load_sheet = string(textscan(fid, '%q', 1, 'delimiter', '\n', 'headerlines', 2));
+            this.algorithm = string(textscan(fid, '%q', 1, 'delimiter', '\n', 'headerlines', 2));
+            this.case_name = string(textscan(fid, '%q', 1, 'delimiter', '\n', 'headerlines', 2));
+            this.simulation_hours = cell2mat(textscan(fid, '%d', 1, 'delimiter', '\n', 'headerlines', 2));
+            this.start_hour = cell2mat(textscan(fid, '%d', 1, 'delimiter', '\n', 'headerlines', 2));
+            this.case_sheet = string(textscan(fid, '%q', 1, 'delimiter', '\n', 'headerlines', 2));
+            temp = string(textscan(fid, '%q', 1, 'delimiter', '\n', 'headerlines', 2));
+            if (temp == "false")
+                this.block_dispatch = false;
+            else
+                this.block_dispatch = true;
+            end
         end
     end
 end
