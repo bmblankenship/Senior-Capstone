@@ -12,12 +12,12 @@
     initialization(0, 'RequiredOutages.xlsx', 'HourlyLoad.xlsx', 'NR-SH', 'case118_CAPER_PeakLoad.m', 5, 1, 'InitialCaseData.xlsx');
 %}
 
-function initialization(VERBOSE, OUTAGE_SHEET, LOAD_SHEET, ALGORITHM_TYPE, CASE_NAME, SIMULATION_HOURS, SIM_START_HOUR, CASE_SHEET)
+function initialization(VERBOSE, OUTAGE_SHEET, LOAD_SHEET, ALGORITHM_TYPE, CASE_NAME, SIMULATION_HOURS, SIM_START_HOUR, CASE_SHEET, BLOCK_DISPATCH)
     tic; 
     if nargin == 0
         sim_settings = settings();
     else
-        sim_settings = settings(VERBOSE, OUTAGE_SHEET, LOAD_SHEET, ALGORITHM_TYPE, CASE_NAME, SIMULATION_HOURS, SIM_START_HOUR, CASE_SHEET);
+        sim_settings = settings(VERBOSE, OUTAGE_SHEET, LOAD_SHEET, ALGORITHM_TYPE, CASE_NAME, SIMULATION_HOURS, SIM_START_HOUR, CASE_SHEET, BLOCK_DISPATCH);
     end
 
     if(sim_settings.simulation_hours > 8760)
@@ -34,22 +34,24 @@ function initialization(VERBOSE, OUTAGE_SHEET, LOAD_SHEET, ALGORITHM_TYPE, CASE_
     mpc = runpf_wcu(sim_settings.case_name, mpopt);
     
     % Load Data Initilization
-    load_data = import_load_data(sim_settings.load_data);
+    load_data = import_load_data(sim_settings);
     
     % Generation Initilization
-    generation_outages = generator_outage(OUTAGE_SHEET, 'Generation');
-    gen_block_1 = generation_block(sim_settings.case_sheet, 1);
-    gen_block_2 = generation_block(sim_settings.case_sheet, 2);
-    gen_block_3 = generation_block(sim_settings.case_sheet, 3);
-    gen_block_4 = generation_block(sim_settings.case_sheet, 4);
-    gen_block_5 = generation_block(sim_settings.case_sheet, 5);
-    block_dispatch = generate_block_dispatch(sim_settings, gen_block_1, gen_block_2, gen_block_3, gen_block_4, gen_block_5, load_data, generation_outages);
+    generation_outages = generator_outage(sim_settings);
+    if(settings.block_dispatch == true)
+        gen_block_1 = generation_block(sim_settings, 1);
+        gen_block_2 = generation_block(sim_settings, 2);
+        gen_block_3 = generation_block(sim_settings, 3);
+        gen_block_4 = generation_block(sim_settings, 4);
+        gen_block_5 = generation_block(sim_settings, 5);
+        block_dispatch = generate_block_dispatch(sim_settings, gen_block_1, gen_block_2, gen_block_3, gen_block_4, gen_block_5, load_data, generation_outages);
+        assignin('base', 'block_dispatch', block_dispatch);
+    end
     
     % MATLAB debugging Variables
     assignin('base', 'mpc', mpc);
     assignin('base', 'generation_outages', generation_outages);
     assignin('base', 'load_data', load_data);
-    assignin('base', 'block_dispatch', block_dispatch);
     
     %initial N-1 contingency to verify health of the system with planned generator outages
     [initial_results_array, initial_mpc_array] = n1_contingency(SIM_START_HOUR, SIMULATION_HOURS, -1);

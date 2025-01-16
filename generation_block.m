@@ -6,17 +6,17 @@ classdef generation_block
         block_table
     end
     methods (Access = public)
-        function this = generation_block(case_sheet, block)
-            this.block_table = table2array(readtable(case_sheet, "sheet", "Gen"));
+        function this = generation_block(settings, block)
+            this.block_table = table2array(readtable(settings.case_sheet, "sheet", "Gen"));
             this.busses = index_busses(block, this.block_table);
             this.capacity = index_capacity(block, this.block_table);
             this.total_capacity = calc_total_capacity(block, this.block_table);
         end
-        function lower_cap(this, val)
-            this.total_capacity = this.total_capacity - val;
+        function total_capacity = lower_cap(this, val)
+            total_capacity = this.total_capacity - val;
         end
-        function inc_cap(this, val)
-            this.total_capacity = this.total_capacity + val;
+        function total_capacity = inc_cap(this, val)
+            total_capacity = this.total_capacity + val;
         end
     end
 

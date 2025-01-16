@@ -1,7 +1,7 @@
 %%generator outage
-function [generator_outage] = generator_outage(filename, tabname)
-    generator_data = readtable(filename, "sheet", tabname);
-    gen_block_data = table2array(readtable(CASE_SHEET, "sheet", "Gen"));
+function [generator_outage] = generator_outage(settings)
+    generator_data = readtable(settings.outage_sheet, "sheet", "Generation");
+    gen_block_data = table2array(readtable(settings.case_sheet, "sheet", "Gen"));
     
     bus = table2array(generator_data(:,1));
     gen_start_dates = table2array(generator_data(:,4));

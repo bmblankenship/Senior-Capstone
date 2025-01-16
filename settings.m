@@ -8,10 +8,11 @@ classdef settings
         simulation_hours
         start_hour
         case_sheet
+        block_dispatch
     end
 
     methods
-        function this = settings(verbose, outage, load, alg, cname, hours, start, csheet)
+        function this = settings(verbose, outage, load, alg, cname, hours, start, csheet, dispatch)
             if nargin == 0
                 this.verbose = 0;
                 this.outage_sheet = 'RequiredOutages.xlsx';
@@ -21,6 +22,7 @@ classdef settings
                 this.simulation_hours = 5;
                 this.start_hour = 1;
                 this.case_sheet = 'InitialCaseData.xlsx';
+                this.block_dispatch = false;
             else
                 this.verbose = verbose;
                 this.outage_sheet = outage;
@@ -30,6 +32,7 @@ classdef settings
                 this.simulation_hours = hours;
                 this.start_hour = start;
                 this.case_sheet = csheet;
+                this.block_dispatch = dispatch;
             end
         end
     end
