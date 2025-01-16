@@ -47,6 +47,7 @@ end
     SIMULATION_HOURS: number of hours of the year to iterate over, maximum value 8760
     SIM_START_HOUR: hour index in year to start the simulation. Default should be 1 for most cases
     CASE_SHEET: The Excel sheet containing the original case data
+    block_dispatch: enable or disable block dispatch
 
     example function call:
     initialization(0, 'RequiredOutages.xlsx', 'HourlyLoad.xlsx', 'NR-SH', 'case118_CAPER_PeakLoad.m', 5, 1, 'InitialCaseData.xlsx');
