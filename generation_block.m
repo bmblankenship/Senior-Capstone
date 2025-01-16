@@ -8,14 +8,20 @@ classdef generation_block
     methods (Access = public)
         function this = generation_block(case_sheet, block)
             this.block_table = table2array(readtable(case_sheet, "sheet", "Gen"));
-            this.busses = index_busses(this, block, this.block_table);
-            this.capacity = index_capacity(this, block, this.block_table);
-            this.total_capacity = calc_total_capacity(this, block, this.block_table);
+            this.busses = index_busses(block, this.block_table);
+            this.capacity = index_capacity(block, this.block_table);
+            this.total_capacity = calc_total_capacity(block, this.block_table);
+        end
+        function lower_cap(this, val)
+            this.total_capacity = this.total_capacity - val;
+        end
+        function inc_cap(this, val)
+            this.total_capacity = this.total_capacity + val;
         end
     end
 
     methods (Access = private)
-        function val = index_busses(this, block, block_arr)
+        function val = index_busses(block, block_arr)
             val = [];
 
             for k = 1:height(block_arr)
@@ -25,7 +31,7 @@ classdef generation_block
             end
         end
 
-        function val = index_capacity(this, block, block_arr)
+        function val = index_capacity(block, block_arr)
             val = [];
 
             for k = 1:height(block_arr)
@@ -35,7 +41,7 @@ classdef generation_block
             end
         end
 
-        function val = calc_total_capacity(this, block, block_arr)
+        function val = calc_total_capacity(block, block_arr)
             val = 0;
 
             for k = 1:height(block_arr)

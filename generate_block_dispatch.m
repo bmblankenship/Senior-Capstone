@@ -1,5 +1,5 @@
 %% Block Dispatch Generator
-function [dispatch] = generate_block_dispatch()
+function [dispatch] = generate_block_dispatch(settings, gen_block_1, gen_block_2, gen_block_3, gen_block_4, gen_block_5, load_data, generation_outages)
     % generate_block_dispatch Generate 8760x5 array of block weightings
     % block 1 is highest priority
     % block 5 is lowest priority
@@ -7,11 +7,11 @@ function [dispatch] = generate_block_dispatch()
     % Regenerate by recalling the function with the new load added in
     
     % Import block references from proper excel sheet
-    generation_blocks = table2array(readtable(CASE_SHEET, "sheet", "Gen"));
+    generation_blocks = table2array(readtable(settings.case_sheet, "sheet", "Gen"));
 
     % Return variable
     % Format is block 1 - 2 - 3 - 4 - 5 and will be percent utilization of that block
-    dispatch = [zeros, 8760; zeros, 8760; zeros, 8760; zeros, 8760; zeros, 8760];
+    dispatch = [zeros, settings.simulation_hours; zeros, settings.simulation_hours; zeros, settings.simulation_hours; zeros, settings.simulation_hours; zeros, settings.simulation_hours];
 
     % Block debugging variables
     assignin('base', 'gen_block_1', gen_block_1);
@@ -22,7 +22,7 @@ function [dispatch] = generate_block_dispatch()
     assignin('base', 'generation_blocks', generation_blocks);
     
     % Iterate through all hours and assign dispatch values to each hour from 1 to 8760
-    for k = 1:8760
+    for k = 1:settings.simulation_hours
         for j = 1:height(generation_outages)
             % Check if generation needs to be turned off for an outage
             if (generation_outages(j,2) == k)
@@ -31,37 +31,40 @@ function [dispatch] = generate_block_dispatch()
 
                 switch block
                 case 1
-                    for b = 1:height(gen_block_1)
-                        if(gen_block_1(b,1) == gen)
-                            gen_block_1_avail = gen_block_1_avail - gen_block_1(b,3);
+                    for b = 1:height(gen_block_1.busses)
+                        if(gen_block_1.busess(b) == gen)
+                            lower_cap(gen_block_1, gen_block_1.capacity(b));
                         end
                     end
                 case 2
-                    for b = 1:height(gen_block_2)
-                        if(gen_block_2(b,1) == gen)
-                            gen_block_2_avail = gen_block_2_avail - gen_block_2(b,3);
+                    for b = 1:height(gen_block_2.busses)
+                        if(gen_block_2.busses(b) == gen)
+                            lower_cap(gen_block_2, gen_block_2.capacity(b));
                         end
                     end
                 case 3
-                    for b = 1:height(gen_block_3)
-                        if(gen_block_3(b,1) == gen)
-                            gen_block_3_avail = gen_block_3_avail - gen_block_3(b,3);
+                    for b = 1:height(gen_block_3.busses)
+                        if(gen_block_3.busses(b) == gen)
+                            lower_cap(gen_block_3, gen_block_3.capacity(b));
                         end
                     end
                 case 4
-                    for b = 1:height(gen_block_4)
-                        if(gen_block_4(b,1) == gen)
-                            gen_block_4_avail = gen_block_4_avail - gen_block_4(b,3);
+                    for b = 1:height(gen_block_4.busses)
+                        if(gen_block_4.busses(b) == gen)
+                            lower_cap(gen_block_4, gen_block_4.capacity(b));
                         end
                     end
                 case 5
-                    for b = 1:height(gen_block_5)
-                        if(gen_block_5(b,1) == gen)
-                            gen_block_5_avail = gen_block_5_avail - gen_block_5(b,3);
+                    for b = 1:height(gen_block_5.busses)
+                        if(gen_block_5.busses(b) == gen)
+                            lower_cap(gen_block_5, gen_block_5.capacity(b));
                         end
                     end
                 end% End Switch
             end % End if
+
+            %%REFACTOR COMPLETE UP TO THIS POINT
+            %probably lmao
 
             % Check if generation needs to be turned on after an outage
             if (generation_outages(j,2) + generation_outages(j,3) == k)
