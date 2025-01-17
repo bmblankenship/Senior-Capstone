@@ -27,11 +27,19 @@ function initialization()
         gen_block_4 = generation_block(sim_settings, 4);
         gen_block_5 = generation_block(sim_settings, 5);
         gen_array = [gen_block_1; gen_block_2; gen_block_3; gen_block_4; gen_block_5];
-        block_dispatch = generate_block_dispatch(sim_settings, gen_block_1, gen_block_2, gen_block_3, gen_block_4, gen_block_5, load_data, generation_outages);
+        [block_dispatch, generation_blocks] = generate_block_dispatch(sim_settings, gen_block_1, gen_block_2, gen_block_3, gen_block_4, gen_block_5, load_data, generation_outages);
+        
+        % Block debugging variables
         assignin('base', 'block_dispatch', block_dispatch);
+        assignin('base', 'gen_block_1', gen_block_1);
+        assignin('base', 'gen_block_2', gen_block_2);
+        assignin('base', 'gen_block_3', gen_block_3);
+        assignin('base', 'gen_block_4', gen_block_4);
+        assignin('base', 'gen_block_5', gen_block_5);
+        assignin('base', 'generation_blocks', generation_blocks);
     else
-        gen_array = 0;
-        block_dispatch = 0;
+        gen_array = [];
+        block_dispatch = 0.0;
     end
     
     % MATLAB debugging Variables

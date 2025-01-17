@@ -1,5 +1,5 @@
 %% Block Dispatch Generator
-function [dispatch] = generate_block_dispatch(settings, gen_block_1, gen_block_2, gen_block_3, gen_block_4, gen_block_5, load_data, generation_outages)
+function [dispatch, generation_blocks] = generate_block_dispatch(settings, gen_block_1, gen_block_2, gen_block_3, gen_block_4, gen_block_5, load_data, generation_outages)
     % generate_block_dispatch Generate 8760x5 array of block weightings
     % block 1 is highest priority
     % block 5 is lowest priority
@@ -11,15 +11,7 @@ function [dispatch] = generate_block_dispatch(settings, gen_block_1, gen_block_2
 
     % Return variable
     % Format is block 1 - 2 - 3 - 4 - 5 and will be percent utilization of that block
-    dispatch = [zeros, settings.simulation_hours; zeros, settings.simulation_hours; zeros, settings.simulation_hours; zeros, settings.simulation_hours; zeros, settings.simulation_hours];
-
-    % Block debugging variables
-    assignin('base', 'gen_block_1', gen_block_1);
-    assignin('base', 'gen_block_2', gen_block_2);
-    assignin('base', 'gen_block_3', gen_block_3);
-    assignin('base', 'gen_block_4', gen_block_4);
-    assignin('base', 'gen_block_5', gen_block_5);
-    assignin('base', 'generation_blocks', generation_blocks);
+    dispatch = [];
     
     % Iterate through all hours and assign dispatch values to each hour from 1 to 8760
     for k = 1:settings.simulation_hours
@@ -108,18 +100,18 @@ function [dispatch] = generate_block_dispatch(settings, gen_block_1, gen_block_2
 
         current_load = load_data(k,1);
         extra_gen = 0;
-        dispatch(k,1) = 0;
-        dispatch(k,2) = 0;
-        dispatch(k,3) = 0;
-        dispatch(k,4) = 0;
-        dispatch(k,5) = 0;
+        dispatch(k,1) = double(0);
+        dispatch(k,2) = double(0);
+        dispatch(k,3) = double(0);
+        dispatch(k,4) = double(0);
+        dispatch(k,5) = double(0);
 
         % Dispatch Block 1
         if(current_load <= 0)
             dispatch(k,1) = 0;
         elseif(current_load - gen_block_1.total_capacity < 0)
             extra_gen = gen_block_1.total_capacity - current_load;
-            dispatch(k,1) = (gen_block_1.total_capacity - extra_gen) / gen_block_1.total_capacity;
+            dispatch(k,1) = double((gen_block_1.total_capacity - extra_gen) / gen_block_1.total_capacity);
             current_load = 0;
         elseif(current_load - gen_block_1.total_capacity > 0)
             current_load = current_load - gen_block_1.total_capacity;
@@ -131,7 +123,7 @@ function [dispatch] = generate_block_dispatch(settings, gen_block_1, gen_block_2
             dispatch(k,2) = 0;
         elseif(current_load - gen_block_2.total_capacity < 0)
             extra_gen = gen_block_2.total_capacity - current_load;
-            dispatch(k,2) = (gen_block_2.total_capacity - extra_gen) / gen_block_2.total_capacity;
+            dispatch(k,2) = double((gen_block_2.total_capacity - extra_gen) / gen_block_2.total_capacity);
             current_load = 0;
         elseif(current_load - gen_block_2.total_capacity > 0)
             current_load = current_load - gen_block_2.total_capacity;
@@ -143,10 +135,10 @@ function [dispatch] = generate_block_dispatch(settings, gen_block_1, gen_block_2
             dispatch(k,3) = 0;
         elseif(current_load - gen_block_3.total_capacity < 0)
             extra_gen = gen_block_3.total_capacity - current_load;
-            dispatch(k,3) = (gen_block_3.total_capacity - extra_gen) / gen_block_3.total_capacity;
+            dispatch(k,3) = double((gen_block_3.total_capacity - extra_gen) / gen_block_3.total_capacity);
             current_load = 0;
         elseif(current_load - gen_block_3.total_capacity > 0)
-            current_load = current_load - gen_block_3.total_capacityl;
+            current_load = current_load - gen_block_3.total_capacity;
             dispatch(k,3) = 1;
         end
 
@@ -155,7 +147,7 @@ function [dispatch] = generate_block_dispatch(settings, gen_block_1, gen_block_2
             dispatch(k,4) = 0;
         elseif(current_load - gen_block_4.total_capacity < 0)
             extra_gen = gen_block_4.total_capacity - current_load;
-            dispatch(k,4) = (gen_block_4.total_capacity - extra_gen) / gen_block_4.total_capacity;
+            dispatch(k,4) = double((gen_block_4.total_capacity - extra_gen) / gen_block_4.total_capacity);
             current_load = 0;
         elseif(current_load - gen_block_4.total_capacity > 0)
             current_load = current_load - gen_block_4.total_capacity;
@@ -167,7 +159,7 @@ function [dispatch] = generate_block_dispatch(settings, gen_block_1, gen_block_2
             dispatch(k,5) = 0;
         elseif(current_load - gen_block_5.total_capacity < 0)
             extra_gen = gen_block_5.total_capacity - current_load;
-            dispatch(k,5) = (gen_block_5.total_capacity - extra_gen) / gen_block_5.total_capacity;
+            dispatch(k,5) = double((gen_block_5.total_capacity - extra_gen) / gen_block_5.total_capacity);
             current_load = 0;
         elseif(current_load - gen_block_5.total_capacity > 0)
             current_load = current_load - gen_block_5.total_capacity;

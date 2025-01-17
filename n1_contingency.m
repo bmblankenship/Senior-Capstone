@@ -56,5 +56,4 @@ function [results_array, mpc_array] = n1_contingency(settings, lineout, generati
 
         end %for loop
     end %parfor loop
-    assignin('base', 'results_array', results_array);
 end
