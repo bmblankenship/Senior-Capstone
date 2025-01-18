@@ -12,7 +12,7 @@ function initialization()
     mpc = runpf_wcu(sim_settings.case_name, mpopt);
     
     % Load Data Initilization 
-    load_data = import_load_data(sim_settings);
+    load_data_obj = load_data(sim_settings);
     
     % Generation Initilization
     generation_outages = generator_outage(sim_settings);
@@ -23,7 +23,7 @@ function initialization()
         gen_block_4 = generation_block(sim_settings, 4);
         gen_block_5 = generation_block(sim_settings, 5);
         gen_array = [gen_block_1; gen_block_2; gen_block_3; gen_block_4; gen_block_5];
-        [block_dispatch, generation_blocks] = generate_block_dispatch(sim_settings, gen_block_1, gen_block_2, gen_block_3, gen_block_4, gen_block_5, load_data, generation_outages);
+        [block_dispatch, generation_blocks] = generate_block_dispatch(sim_settings, gen_block_1, gen_block_2, gen_block_3, gen_block_4, gen_block_5, load_data_obj, generation_outages);
         
         % Block debugging variables
         assignin('base', 'block_dispatch', block_dispatch);
@@ -41,10 +41,11 @@ function initialization()
     % MATLAB debugging Variables
     assignin('base', 'mpc', mpc);
     assignin('base', 'generation_outages', generation_outages);
-    assignin('base', 'load_data', load_data);
+    assignin('base', 'load_data', load_data_obj);
     
     %initial N-1 contingency to verify health of the system with planned generator outages
-    [initial_results_array, initial_mpc_array] = n1_contingency(sim_settings, -1, generation_outages, load_data, mpc, gen_array, block_dispatch, mpopt);
+    disp("Starting N-1 Contingency Analysis");
+    [initial_results_array, initial_mpc_array] = n1_contingency(sim_settings, -1, generation_outages, load_data_obj, mpc, gen_array, block_dispatch, mpopt);
     assignin('base', 'initial_results_array', initial_results_array);
     assignin('base', 'initial_mpc_array', initial_mpc_array);
     

@@ -1,7 +1,9 @@
 %%n-1 contingency
 function [results_array, mpc_array] = n1_contingency(settings, lineout, generation_outages, load_data, mpc, gen_array, block_dispatch, mpopt) 
-
     for k = settings.start_hour:settings.simulation_hours
+        if(mod(k,10) == 0)
+            disp("N-1 Contingency Hour: " + k);
+        end
         %temporary variables for parallel functionality 
         tempmpc = mpc;
         temp_generation_outages = generation_outages;
@@ -42,13 +44,13 @@ function [results_array, mpc_array] = n1_contingency(settings, lineout, generati
             if(settings.block_dispatch == true)
                 temp_isl_mpc = gen_scale(temp_isl_mpc, block_dispatch, k, gen_array(1), gen_array(2), gen_array(3), gen_array(4), gen_array(5));
             else
-                temp_isl_mpc.gen(:,2) = temp_isl_mpc.gen(:,2) * par_temp_load_data(k,2);
-                temp_isl_mpc.gen(:,3) = temp_isl_mpc.gen(:,3) * par_temp_load_data(k,2);
+                temp_isl_mpc.gen(:,2) = temp_isl_mpc.gen(:,2) * par_temp_load_data.weighted_load(k);
+                temp_isl_mpc.gen(:,3) = temp_isl_mpc.gen(:,3) * par_temp_load_data.weighted_load(k);
             end
             
             %load scaling
-            temp_isl_mpc.bus(:,3) = temp_isl_mpc.bus(:,3) * par_temp_load_data(k,2); %Real Power scaling
-            temp_isl_mpc.bus(:,4) = temp_isl_mpc.bus(:,4) * par_temp_load_data(k,2); %Reactive power scaling
+            temp_isl_mpc.bus(:,3) = temp_isl_mpc.bus(:,3) * par_temp_load_data.weighted_load(k); %Real Power scaling
+            temp_isl_mpc.bus(:,4) = temp_isl_mpc.bus(:,4) * par_temp_load_data.weighted_load(k); %Reactive power scaling
 
             results = runpf_wcu(temp_isl_mpc, mpopt);
             results_array{k,n} = limits_check(results);

@@ -100,7 +100,7 @@ function [dispatch, generation_blocks] = generate_block_dispatch(settings, gen_b
         % Compare load for this hour to the size of the availiable generation.
         % Assign a percentage of the block generation to each hour.
 
-        current_load = load_data(k,1);
+        current_load = load_data.actual_load(k);
         extra_gen = 0;
         dispatch(k,1) = double(0);
         dispatch(k,2) = double(0);
