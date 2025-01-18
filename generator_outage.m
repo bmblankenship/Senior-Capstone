@@ -1,7 +1,9 @@
 %%generator outage
 function [generator_outage] = generator_outage(settings)
+    w = warning('off', 'MATLAB:table:ModifiedAndSavedVarnames');
     generator_data = readtable(settings.outage_sheet, "sheet", "Generation");
     gen_block_data = table2array(readtable(settings.case_sheet, "sheet", "Gen"));
+    warning(w);
     
     bus = table2array(generator_data(:,1));
     gen_start_dates = table2array(generator_data(:,4));

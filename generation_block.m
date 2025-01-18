@@ -7,7 +7,10 @@ classdef generation_block
     end
     methods
         function this = generation_block(settings, block)
+            w=warning('off', 'MATLAB:table:ModifiedAndSavedVarnames');
             this.block_table = table2array(readtable(settings.case_sheet, "sheet", "Gen"));
+            warning(w);
+            
             this.busses = index_busses(this, block, this.block_table);
             this.capacity = index_capacity(this, block, this.block_table);
             this.total_capacity = calc_total_capacity(this, block, this.block_table);

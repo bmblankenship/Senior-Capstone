@@ -1,21 +1,17 @@
 function initialization()
-    tic; 
+    tic;
         sim_settings = local_settings();
 
     if(sim_settings.simulation_hours > 8760)
         warning('Simulation Hours Specified are out of range (>8760). Setting to 8760.');
         sim_settings.simulation_hours = 8760;
     end
-        
-    % mpc.gen(:,2)=mpc.gen(:,2); %generation scaling
-    % mpc.bus(:,3)=mpc.bus(:,3); %Real Power scaling
-    % mpc.bus(:,4)=mpc.bus(:,4); %Reactive power scaling
-        
+    
     % Options Initilization
     mpopt = mpoption('pf.alg', sim_settings.algorithm, 'verbose', sim_settings.verbose);
     mpc = runpf_wcu(sim_settings.case_name, mpopt);
     
-    % Load Data Initilization
+    % Load Data Initilization 
     load_data = import_load_data(sim_settings);
     
     % Generation Initilization

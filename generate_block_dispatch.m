@@ -7,7 +7,9 @@ function [dispatch, generation_blocks] = generate_block_dispatch(settings, gen_b
     % Regenerate by recalling the function with the new load added in
     
     % Import block references from proper excel sheet
+    w=warning('off', 'MATLAB:table:ModifiedAndSavedVarnames');
     generation_blocks = table2array(readtable(settings.case_sheet, "sheet", "Gen"));
+    warning(w);
 
     % Return variable
     % Format is block 1 - 2 - 3 - 4 - 5 and will be percent utilization of that block

@@ -28,31 +28,33 @@ function [results_array, mpc_array] = n1_contingency(settings, lineout, generati
             end
         end%for loop
 
-        for n = 1:height(tempmpc.branch)
+        parfor n = 1:height(tempmpc.branch)
+            partempmpc = tempmpc;
+            par_temp_load_data = temp_load_data;
             if(lineout ~= -1)%case where no line is selected
-                tempmpc.branch(lineout, 11) = 0;
+                partempmpc.branch(lineout, 11) = 0;
             end
-            tempmpc.branch(n,11) = 0;
+            partempmpc.branch(n,11) = 0;
 
-            temp_isl_mpc = extract_islands(tempmpc, 1);
+            temp_isl_mpc = extract_islands(partempmpc, 1);
 
             %block dispatch
             if(settings.block_dispatch == true)
                 temp_isl_mpc = gen_scale(temp_isl_mpc, block_dispatch, k, gen_array(1), gen_array(2), gen_array(3), gen_array(4), gen_array(5));
             else
-                temp_isl_mpc.gen(:,2) = temp_isl_mpc.gen(:,2) * temp_load_data(k,2);
-                temp_isl_mpc.gen(:,3) = temp_isl_mpc.gen(:,3) * temp_load_data(k,2);
+                temp_isl_mpc.gen(:,2) = temp_isl_mpc.gen(:,2) * par_temp_load_data(k,2);
+                temp_isl_mpc.gen(:,3) = temp_isl_mpc.gen(:,3) * par_temp_load_data(k,2);
             end
             
             %load scaling
-            temp_isl_mpc.bus(:,3) = temp_isl_mpc.bus(:,3) * temp_load_data(k,2); %Real Power scaling
-            temp_isl_mpc.bus(:,4) = temp_isl_mpc.bus(:,4) * temp_load_data(k,2); %Reactive power scaling
+            temp_isl_mpc.bus(:,3) = temp_isl_mpc.bus(:,3) * par_temp_load_data(k,2); %Real Power scaling
+            temp_isl_mpc.bus(:,4) = temp_isl_mpc.bus(:,4) * par_temp_load_data(k,2); %Reactive power scaling
 
             results = runpf_wcu(temp_isl_mpc, mpopt);
             results_array{k,n} = limits_check(results);
             mpc_array(k,n) = results;
             
-            tempmpc.branch(n,11) = 1;
+            partempmpc.branch(n,11) = 1;
 
         end %for loop
     end %parfor loop
