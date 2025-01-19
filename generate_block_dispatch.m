@@ -1,4 +1,3 @@
-%% Block Dispatch Generator
 function [dispatch, generation_blocks] = generate_block_dispatch(settings, gen_block_1, gen_block_2, gen_block_3, gen_block_4, gen_block_5, load_data, generation_outages)
     % generate_block_dispatch Generate 8760x5 array of block weightings
     % block 1 is highest priority

@@ -1,4 +1,3 @@
-%%n-1 contingency
 function [results_array, mpc_array] = n1_contingency(settings, lineout, generation_outages, load_data, mpc, gen_array, block_dispatch, mpopt) 
     for k = settings.start_hour:settings.simulation_hours
         if(mod(k,10) == 0)
