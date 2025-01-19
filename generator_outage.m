@@ -1,4 +1,9 @@
 function [generator_outage] = generator_outage(settings)
+    % generator_outage - A function to convert all relevant generation outage information into tables.
+    %   Returns
+    %       generator_outage => a formatted table of the bus the generation is located at, and the start and end hour of the outage.
+    %   Inputs
+    %       settings contains the names of the sheets to be used to generate the tables.
     w = warning('off', 'MATLAB:table:ModifiedAndSavedVarnames');
     generator_data = readtable(settings.outage_sheet, "sheet", "Generation");
     gen_block_data = table2array(readtable(settings.case_sheet, "sheet", "Gen"));

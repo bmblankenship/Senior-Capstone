@@ -1,5 +1,12 @@
 function [limit_check_return] = limits_check(mpc_case)
-
+    % limits_check - A function to verify health of the system under different outage cases
+    %   Returns
+    %       limit_check_return => Returns formatted strings to indicate either a full pass:
+    %       Pass: 11 PP
+    %       Otherwise indicates the failure mode and branches or busses the failure was located at.
+    %       Failure: 00 106||109
+    %   Inputs
+    %       mpc_case is the result of a powerflow from runpf.
     MVA_success_flag = true;
     MVA_failure_branch = 'P';
     for n = 1:height(mpc_case.branch)
@@ -33,12 +40,12 @@ function [limit_check_return] = limits_check(mpc_case)
     % Return format
     % VMag MVAMag Bus Branch
     if(~voltage_success_flag && ~MVA_success_flag)
-        limit_check_return = append('00 ', voltage_failure_bus, ' ', MVA_failure_branch);
+        limit_check_return = append('00 ', voltage_failure_bus, '||', MVA_failure_branch);
     elseif(voltage_success_flag && ~MVA_success_flag)
-        limit_check_return = append('10 ', voltage_failure_bus, ' ', MVA_failure_branch);
+        limit_check_return = append('10 ', voltage_failure_bus, '||', MVA_failure_branch);
     elseif(~voltage_success_flag && MVA_success_flag)
-        limit_check_return = append('01 ', voltage_failure_bus, ' ', MVA_failure_branch);
+        limit_check_return = append('01 ', voltage_failure_bus, '||', MVA_failure_branch);
     else
-        limit_check_return = append('11 ', voltage_failure_bus, ' ', MVA_failure_branch);
+        limit_check_return = append('11 ', voltage_failure_bus, '||', MVA_failure_branch);
     end
 end

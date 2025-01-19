@@ -1,6 +1,6 @@
 function initialization()
     tic;
-        sim_settings = local_settings();
+    sim_settings = local_settings();
 
     if(sim_settings.simulation_hours > 8760)
         warning('Simulation Hours Specified are out of range (>8760). Setting to 8760.');
@@ -45,9 +45,9 @@ function initialization()
     
     %initial N-1 contingency to verify health of the system with planned generator outages
     disp("Starting N-1 Contingency Analysis");
-    [initial_results_array, initial_mpc_array] = n1_contingency(sim_settings, -1, generation_outages, load_data_obj, mpc, gen_array, block_dispatch, mpopt);
-    assignin('base', 'initial_results_array', initial_results_array);
-    assignin('base', 'initial_mpc_array', initial_mpc_array);
+    [ini_results, ini_mpc] = n1_contingency(sim_settings, -1, generation_outages, load_data_obj, mpc, gen_array, block_dispatch, mpopt, settings.start_hour, settings.simulation_hours);
+    assignin('base', 'initial_results_array', ini_results);
+    assignin('base', 'initial_mpc_array', ini_mpc);
     
     % Main Loop Framework Layout
     %{ 
