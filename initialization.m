@@ -45,7 +45,7 @@ function initialization()
     
     %initial N-1 contingency to verify health of the system with planned generator outages
     disp("Starting N-1 Contingency Analysis");
-    [ini_results, ini_mpc] = n1_contingency(sim_settings, -1, generation_outages, load_data_obj, mpc, gen_array, block_dispatch, mpopt, settings.start_hour, settings.simulation_hours);
+    [ini_results, ini_mpc] = n1_contingency(sim_settings, -1, generation_outages, load_data_obj, mpc, gen_array, block_dispatch, mpopt, sim_settings.start_hour, sim_settings.simulation_hours);
     assignin('base', 'initial_results_array', ini_results);
     assignin('base', 'initial_mpc_array', ini_mpc);
     
