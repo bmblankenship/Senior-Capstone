@@ -1,4 +1,5 @@
 classdef local_settings
+    % See SETTINGS_TMPLATE.txt for proper formatting of settings document.
     properties
         verbose % Integer: value of 0, 1 or 2. Set to 0 for no output to console to increase simulation speed
         outage_sheet % String: Name of the outage sheet being used eg: 'RequiredOutages.xlsx'

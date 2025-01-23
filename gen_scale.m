@@ -1,4 +1,3 @@
-%% Generation Scaling
 function scaled_generation = gen_scale(gen_mpc, gen_scaling, gen_hour, block_1, block_2, block_3, block_4, block_5)
     scaled_generation = gen_mpc;
     selector = 0;

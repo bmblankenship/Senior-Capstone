@@ -1,4 +1,3 @@
-%% Block Dispatch Generator
 function [dispatch, generation_blocks] = generate_block_dispatch(settings, gen_block_1, gen_block_2, gen_block_3, gen_block_4, gen_block_5, load_data, generation_outages)
     % generate_block_dispatch Generate 8760x5 array of block weightings
     % block 1 is highest priority
@@ -7,7 +6,9 @@ function [dispatch, generation_blocks] = generate_block_dispatch(settings, gen_b
     % Regenerate by recalling the function with the new load added in
     
     % Import block references from proper excel sheet
+    w=warning('off', 'MATLAB:table:ModifiedAndSavedVarnames');
     generation_blocks = table2array(readtable(settings.case_sheet, "sheet", "Gen"));
+    warning(w);
 
     % Return variable
     % Format is block 1 - 2 - 3 - 4 - 5 and will be percent utilization of that block
@@ -98,7 +99,7 @@ function [dispatch, generation_blocks] = generate_block_dispatch(settings, gen_b
         % Compare load for this hour to the size of the availiable generation.
         % Assign a percentage of the block generation to each hour.
 
-        current_load = load_data(k,1);
+        current_load = load_data.actual_load(k);
         extra_gen = 0;
         dispatch(k,1) = double(0);
         dispatch(k,2) = double(0);
