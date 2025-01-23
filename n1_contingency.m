@@ -1,4 +1,4 @@
-function [results_array, mpc_array] = n1_contingency(settings, lineout, generation_outages, load_data, mpc, gen_array, block_dispatch, mpopt, start_hour, end_hour)
+function [results_array, mpc_array, failure_array] = n1_contingency(settings, lineout, generation_outages, load_data, mpc, gen_array, block_dispatch, mpopt, start_hour, end_hour)
     % n1_contingency - A function to simulate n-1 contingency for power systems.
     %   Returns
     %       results_array => Returns the results of the limits_check function, detailing the health of the system in terms of MVA and Voltage Magnitude limits
@@ -68,8 +68,13 @@ function [results_array, mpc_array] = n1_contingency(settings, lineout, generati
             temp_isl_mpc.bus(:,4) = temp_isl_mpc.bus(:,4) * par_temp_load_data.weighted_load(k); %Reactive power scaling
 
             results = runpf_wcu(temp_isl_mpc, mpopt);
-            results_array{k,n} = limits_check(results);
-            mpc_array(k,n) = results;
+            [limit_results, success] = limits_check(results);
+            results_array{k,n} = limit_results;
+
+            if(~success)
+                mpc_array{k,n} = results;
+                failure_array{k,n} = failure_info(k, n);
+            end
             
             partempmpc.branch(n,11) = 1;
 
