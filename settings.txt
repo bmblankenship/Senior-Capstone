@@ -16,7 +16,7 @@ NR-SH
 case118_CAPER_PeakLoad.m
 
 *** SIMULATION HOURS ***
-200
+2200
 
 *** START HOUR ***
 1
