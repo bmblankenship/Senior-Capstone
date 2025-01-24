@@ -29,19 +29,12 @@ function [results_array, failure_array] = n1_contingency(settings, lineout, gene
             gen_temp_start = temp_generation_outages(gens,2);
             gen_temp_end = temp_generation_outages(gens,3);
             
-            switch gen_temp_start
-                case k
-                    for i = 1: height(tempmpc.gen)
-                        if tempmpc.gen(i,1) == gen_temp
-                            tempmpc.gen(i,8) = 0;
-                        end
+            if(k >= gen_temp_start && k <= gen_temp_end)
+                for i = 1: height(tempmpc.gen)
+                    if tempmpc.gen(i,1) == gen_temp
+                        tempmpc.gen(i,8) = 0;
                     end
-                case k + gen_temp_end + 1
-                    for i = 1: height(tempmpc.gen)
-                        if tempmpc.gen(i,1) == gen_temp
-                            tempmpc.gen(i,8) = 1;
-                        end
-                    end
+                end
             end
         end%for loop
 

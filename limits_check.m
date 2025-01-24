@@ -5,12 +5,12 @@ function [limit_check_return, failure_params] = limits_check(mpc_case)
         %       Pass: 11 PP
         %       Otherwise indicates the failure mode and branches or busses the failure was located at.
         %       Failure: 00 106||109
-    %       status => returns true or false for the limit checks being violated to trigger datacollection for examination
+    %       failure_params => returns structure with information pertaining to failure conditions
     %   Inputs
     %       mpc_case is the result of a powerflow from runpf.
     failure_params = struct;
-    failure_params().vmag = [];
-    failure_params().MVA = [];
+    failure_params.vmag = [];
+    failure_params.MVA = [];
     failure_params.status = true;
     i = 1;
 
@@ -25,18 +25,18 @@ function [limit_check_return, failure_params] = limits_check(mpc_case)
         end
 
         if((apparent_power > mpc_case.branch(n,6)))
-            failure_params(i).MVA = n;
+            failure_params.MVA(i) = n;
             failure_params.status = false;
             MVA_success_flag = false;
             i = i + 1;
         end
     end
-    i = 0;
+    i = 1;
 
     voltage_success_flag = true;
     for n = 1:height(mpc_case.bus)
         if((mpc_case.bus(n,8) >= 1.1 || mpc_case.bus(n,8) <= 0.9))
-            failure_params(i).vmag = n;
+            failure_params.vmag(i) = n;
             failure_params.status = false;
             voltage_success_flag = false;
             i = i + 1;
