@@ -47,18 +47,17 @@ function [results_array, failure_array] = n1_contingency(settings, lineout, gene
             partempmpc.branch(n,11) = 0;
 
             temp_isl_mpc = extract_islands(partempmpc, 1);
-
-            %block dispatch
-            if(block_disp == true)
-                temp_isl_mpc = gen_scale(temp_isl_mpc, block_dispatch, k, gen_array(1), gen_array(2), gen_array(3), gen_array(4), gen_array(5));
-            else
-                temp_isl_mpc.gen(:,2) = temp_isl_mpc.gen(:,2) * par_temp_load_data.weighted_load(k);
-                temp_isl_mpc.gen(:,3) = temp_isl_mpc.gen(:,3) * par_temp_load_data.weighted_load(k);
-            end
             
             %load scaling
             temp_isl_mpc.bus(:,3) = temp_isl_mpc.bus(:,3) * par_temp_load_data.weighted_load(k); %Real Power scaling
             temp_isl_mpc.bus(:,4) = temp_isl_mpc.bus(:,4) * par_temp_load_data.weighted_load(k); %Reactive power scaling
+
+            %block dispatch
+            if(block_disp == true)
+                temp_isl_mpc = gen_scale_block(temp_isl_mpc, block_dispatch, k, gen_array(1), gen_array(2), gen_array(3), gen_array(4), gen_array(5));
+            else
+                temp_isl_mpc = gen_scale_linear(temp_isl_mpc);
+            end
 
             results = runpf_wcu(temp_isl_mpc, mpopt);
             [limit_results, failure_params] = limits_check(results);
