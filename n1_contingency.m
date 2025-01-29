@@ -50,7 +50,6 @@ function [results_array, failure_array] = n1_contingency(settings, lineout, gene
             
             %load scaling
             temp_isl_mpc.bus(:,3) = temp_isl_mpc.bus(:,3) * par_temp_load_data.weighted_load(k); %Real Power scaling
-            temp_isl_mpc.bus(:,4) = temp_isl_mpc.bus(:,4) * par_temp_load_data.weighted_load(k); %Reactive power scaling
 
             %block dispatch
             if(block_disp == true)
