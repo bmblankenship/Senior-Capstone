@@ -1,14 +1,24 @@
 function scaled_generation = gen_scale_linear(mpc)
     % gen_scale_linear: scales generation for linear scaling when block dispatch is disabled
     %   scaled_generation = gen_scale_block(mpc)
-    %       returns scaled mpc based on the mpc that is fed.
-    %       this must occur as the case has been split due to islands, and load has been scaled.
+    %       returns scaled mpc based on the mpc that is passed in.
+    %       this must occur after the case has been split due to islands, and load has been scaled.
     scaled_generation = mpc;
+    total_load = 0;
+    total_generation = 0;
+
+    for i = 1:height(scaled_generation.bus)
+        total_load = total_load + scaled_generation.bus(i,3);
+    end
+
+    for i = 1:height(scaled_generation.gen)
+        if(scaled_generation.gen(i,8) == 1)
+            total_generation = total_generation + scaled_generation.gen(i,9);
+        end
+    end
+
+    extra_generation = total_generation - total_load;
+    gen_scale_factor = double((total_generation - extra_generation) / total_generation);
+
+    scaled_generation.gen(:,2) = scaled_generation.gen(:,9) * gen_scale_factor;
 end
-
-% gen scaling
-%temp_isl_mpc.gen(:,2) = temp_isl_mpc.gen(:,2) * par_temp_load_data.weighted_load(k);
-
-% load scaling
-%temp_isl_mpc.bus(:,3) = temp_isl_mpc.bus(:,3) * par_temp_load_data.weighted_load(k); %Real Power scaling
-%temp_isl_mpc.bus(:,4) = temp_isl_mpc.bus(:,4) * par_temp_load_data.weighted_load(k); %Reactive power scaling
