@@ -72,12 +72,15 @@ function [results_array, failure_array] = n1_contingency(settings, lineout, gene
                 failure.gen = results.gen;
                 failure.vmag = failure_params.vmag;
                 failure.mva = failure_params.MVA;
+                failure.load = load_data.actual_load(k);
                 failure_array{k,n} = failure;
+            else
+                failure_array{k,n} = 0;
             end
+
             
             partempmpc.branch(n,11) = 1;
 
         end %for loop
     end %parfor loop
-    failure_array = failure_array(~cellfun('isempty', failure_array));
 end

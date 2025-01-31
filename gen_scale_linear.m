@@ -20,5 +20,9 @@ function scaled_generation = gen_scale_linear(mpc)
     extra_generation = total_generation - total_load;
     gen_scale_factor = double((total_generation - extra_generation) / total_generation);
 
-    scaled_generation.gen(:,2) = scaled_generation.gen(:,9) * gen_scale_factor;
+    for i = 1:height(scaled_generation.gen)
+        if(scaled_generation.gen(i,8) == 1)
+            scaled_generation.gen(i,2) = scaled_generation.gen(i,9) * gen_scale_factor;
+        end
+    end
 end
