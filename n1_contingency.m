@@ -1,4 +1,4 @@
-function [results_array, failure_array] = n1_contingency(settings, lineout, generation_outages, load_data, mpc, gen_array, block_dispatch, mpopt, start_hour, end_hour)
+function [results_array, failure_array] = n1_contingency(settings, scheduled_outage, generation_outages, load_data, mpc, gen_array, block_dispatch, mpopt, start_hour, end_hour)
     % n1_contingency - A function to simulate n-1 contingency for power systems.
     %   Returns
     %       results_array => Returns the results of the limits_check function, detailing the health of the system in terms of MVA and Voltage Magnitude limits
@@ -38,27 +38,31 @@ function [results_array, failure_array] = n1_contingency(settings, lineout, gene
             end
         end%for loop
 
+        if(scheduled_outage.occuring == true) %where an outage is occuring
+            for i = 1:height(scheduled_outage.branches)
+                tempmpc.branch(scheduled_outage.branches(i), 11) = 0;
+            end
+        end
+        temp_outage_branches = scheduled_outage.branches;
+
         parfor n = 1:height(tempmpc.branch)
+            temp_gen_array = gen_array;
             partempmpc = tempmpc;
             par_temp_load_data = temp_load_data;
-            if(lineout ~= -1)%case where no line is selected
-                partempmpc.branch(lineout, 11) = 0;
-            end
             partempmpc.branch(n,11) = 0;
 
             temp_isl_mpc = extract_islands(partempmpc, 1);
-
-            %block dispatch
-            if(block_disp == true)
-                temp_isl_mpc = gen_scale(temp_isl_mpc, block_dispatch, k, gen_array(1), gen_array(2), gen_array(3), gen_array(4), gen_array(5));
-            else
-                temp_isl_mpc.gen(:,2) = temp_isl_mpc.gen(:,2) * par_temp_load_data.weighted_load(k);
-                temp_isl_mpc.gen(:,3) = temp_isl_mpc.gen(:,3) * par_temp_load_data.weighted_load(k);
-            end
             
             %load scaling
             temp_isl_mpc.bus(:,3) = temp_isl_mpc.bus(:,3) * par_temp_load_data.weighted_load(k); %Real Power scaling
             temp_isl_mpc.bus(:,4) = temp_isl_mpc.bus(:,4) * par_temp_load_data.weighted_load(k); %Reactive power scaling
+
+            %block dispatch
+            if(block_disp == true)
+                temp_isl_mpc = gen_scale_block(temp_isl_mpc, block_dispatch, k, temp_gen_array(1), temp_gen_array(2), temp_gen_array(3), temp_gen_array(4), temp_gen_array(5));
+            else
+                temp_isl_mpc = gen_scale_linear(temp_isl_mpc);
+            end
 
             results = runpf_wcu(temp_isl_mpc, mpopt);
             [limit_results, failure_params] = limits_check(results);
@@ -73,12 +77,16 @@ function [results_array, failure_array] = n1_contingency(settings, lineout, gene
                 failure.gen = results.gen;
                 failure.vmag = failure_params.vmag;
                 failure.mva = failure_params.MVA;
+                failure.load = par_temp_load_data.actual_load(k);
                 failure_array{k,n} = failure;
+            else
+                failure_array{k,n} = 0;
             end
-            
-            partempmpc.branch(n,11) = 1;
+
+            if(~ismember(n,temp_outage_branches))
+                partempmpc.branch(n,11) = 1;
+            end
 
         end %for loop
     end %parfor loop
-    failure_array = failure_array(~cellfun('isempty', failure_array));
 end
