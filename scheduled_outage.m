@@ -12,6 +12,7 @@ classdef scheduled_outage
         start_hour = 0
         end_hour = 0
         branches = []
+        success = false
     end
     methods
         function this = scheduled_outage(occuring, start_hour, end_hour, branches)
@@ -19,6 +20,11 @@ classdef scheduled_outage
             this.start_hour = start_hour;
             this.end_hour = end_hour;
             this.branches = branches;
+            this.success = false;
+        end
+
+        function success = set_state(state)
+            success = state;
         end
     end
 end

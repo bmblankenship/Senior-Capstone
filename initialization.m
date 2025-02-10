@@ -56,7 +56,7 @@ function initialization()
     while(~base_success)
         base_success = true;
         for i = 1:height(schedule)
-            [base_res, base_fail] = n1_contingency(sim_settings, schedule(i), generation_outages, load_data_obj, mpc, gen_array, block_dispatch, mpopt, sim_settings.start_hour, sim_settings.simulation_hours);
+            [base_res, base_fail] = n1_contingency(sim_settings, schedule(i), generation_outages, load_data_obj, mpc, gen_array, block_dispatch, mpopt, schedule(i).start_hour, schedule(i).end_hour);
             base_case{i,1} = base_res;
             base_case{i,2} = base_fail;
             base_case{i,3} = schedule(i);
