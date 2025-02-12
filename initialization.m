@@ -50,6 +50,8 @@ function initialization()
     assignin('base', 'initial_results_array', ini_results);
     assignin('base', 'initial_failure_array', ini_failure);
 
+    % run schedule algorithm
+
     base_success = false;
     base_case = {height(schedule), 3};
 
