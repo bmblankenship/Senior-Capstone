@@ -24,10 +24,10 @@ classdef scheduled_outage
             this.start_hour = start_hour;
             this.end_hour = end_hour;
             this.branches = branches;
-            this.success = false;
+            this.success = true;
         end
 
-        function success = set_state(state)
+        function success = set_state(this, state)
             success = state;
         end
     end

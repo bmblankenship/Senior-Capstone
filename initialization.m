@@ -52,18 +52,29 @@ function initialization()
 
     % run schedule algorithm
 
-    base_success = false;
-    base_case = {height(schedule), 3};
+    % Test schedule
+    schedule(1) = scheduled_outage(true, 1, 121, 17);
+    schedule(2) = scheduled_outage(true, 500, 547, 102);
+    schedule(3) = scheduled_outage(true, 900, 923, 131);
+    % number of scheduling iterations to run
+    counter = 1;
+    base_case = {height(schedule), counter};
 
-    while(~base_success)
-        base_success = true;
-        for i = 1:height(schedule)
+    while(counter > 0)
+        for i = 1:width(schedule)
             [base_res, base_fail] = n1_contingency(sim_settings, schedule(i), generation_outages, load_data_obj, mpc, gen_array, block_dispatch, mpopt, schedule(i).start_hour, schedule(i).end_hour);
-            base_case{i,1} = base_res;
-            base_case{i,2} = base_fail;
-            base_case{i,3} = schedule(i);
+            
+            for j = 1:height(base_res)
+                if(~base_res{j,1})
+                    schedule(i).set_state(false);
+                end
+            end
+
+            base_case{i,counter} = schedule(i);
         end
+        counter = counter - 1;
     end
     
+    assignin('base', 'base_case', base_case);
     toc;
 end
