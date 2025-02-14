@@ -11,7 +11,6 @@ function [limit_check_return, failure_params] = limits_check(mpc_case)
     failure_params = struct;
     failure_params.vmag = [];
     failure_params.MVA = [];
-    failure_params.status = true;
     i = 1;
 
     MVA_success_flag = true;
@@ -26,7 +25,6 @@ function [limit_check_return, failure_params] = limits_check(mpc_case)
 
         if((apparent_power > mpc_case.branch(n,6)))
             failure_params.MVA(i) = n;
-            failure_params.status = false;
             MVA_success_flag = false;
             i = i + 1;
         end
@@ -37,7 +35,6 @@ function [limit_check_return, failure_params] = limits_check(mpc_case)
     for n = 1:height(mpc_case.bus)
         if((mpc_case.bus(n,8) >= 1.1 || mpc_case.bus(n,8) <= 0.9))
             failure_params.vmag(i) = n;
-            failure_params.status = false;
             voltage_success_flag = false;
             i = i + 1;
         end
@@ -45,13 +42,9 @@ function [limit_check_return, failure_params] = limits_check(mpc_case)
     
     % Return format
     % VMag MVAMag Bus Branch
-    if(~voltage_success_flag && ~MVA_success_flag)
-        limit_check_return = '00';
-    elseif(voltage_success_flag && ~MVA_success_flag)
-        limit_check_return = '11';
-    elseif(~voltage_success_flag && MVA_success_flag)
-        limit_check_return = '01';
+    if(~voltage_success_flag || ~MVA_success_flag)
+        limit_check_return = false;
     else
-        limit_check_return = '11';
+        limit_check_return = true;
     end
 end
