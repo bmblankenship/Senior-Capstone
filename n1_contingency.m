@@ -44,7 +44,7 @@ function [results_array, failure_array] = n1_contingency(settings, scheduled_out
             end
         end
         temp_outage_branches = scheduled_outage.branches;
-
+        
         parfor n = 1:height(tempmpc.branch)
             temp_gen_array = gen_array;
             partempmpc = tempmpc;
@@ -54,8 +54,10 @@ function [results_array, failure_array] = n1_contingency(settings, scheduled_out
             temp_isl_mpc = extract_islands(partempmpc, 1);
             
             %load scaling
-            temp_isl_mpc.bus(:,3) = temp_isl_mpc.bus(:,3) * par_temp_load_data.weighted_load(k); %Real Power scaling
-            temp_isl_mpc.bus(:,4) = temp_isl_mpc.bus(:,4) * par_temp_load_data.weighted_load(k); %Reactive power scaling
+            for i = 1:height(temp_isl_mpc.bus)
+                temp_isl_mpc.bus(i,3) = temp_isl_mpc.bus(i,3) * par_temp_load_data.weighted_load(k); %Real Power scaling
+                temp_isl_mpc.bus(i,4) = temp_isl_mpc.bus(i,4) * par_temp_load_data.weighted_load(k); %Reactive power scaling
+            end
 
             %block dispatch
             if(block_disp == true)
@@ -66,9 +68,9 @@ function [results_array, failure_array] = n1_contingency(settings, scheduled_out
 
             results = runpf_wcu(temp_isl_mpc, mpopt);
             [limit_results, failure_params] = limits_check(results);
-            results_array{k,n} = limit_results;
+            temp_results_array{k,n} = limit_results;
 
-            if(~failure_params.status)
+            if(~limit_results)
                 failure = struct;
                 failure.hour = k;
                 failure.branch_out = n;
@@ -87,6 +89,15 @@ function [results_array, failure_array] = n1_contingency(settings, scheduled_out
                 partempmpc.branch(n,11) = 1;
             end
 
-        end %for loop
-    end %parfor loop
+        end %parfor loop
+
+        failure_checker = true;
+        for n = 1:width(temp_results_array)
+            if(temp_results_array{k,n} == false)
+                failure_checker = false;
+            end
+        end
+        results_array{k,1} = failure_checker;
+
+    end %for loop
 end
