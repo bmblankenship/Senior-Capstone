@@ -77,4 +77,7 @@ function initialization()
     
     assignin('base', 'base_case', base_case);
     toc;
+
+    A = cell2mat(ini_results);
+    plot(1:sim_settings.end_hour, A);
 end
