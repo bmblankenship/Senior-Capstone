@@ -8,7 +8,7 @@ function initialization()
     end
     
     % Options Initilization
-    mpopt = mpoption('pf.alg', sim_settings.algorithm, 'verbose', sim_settings.verbose);
+    mpopt = mpoption('pf.alg', sim_settings.algorithm, 'verbose', sim_settings.verbose, 'pf.enforce_q_lims', 1);
     mpc = runpf_wcu(sim_settings.case_name, mpopt);
     
     % Load Data Initilization 
@@ -45,7 +45,7 @@ function initialization()
     
     % initial N-1 contingency to verify health of the system with planned generator outages
     disp("Starting N-1 Contingency Analysis");
-    initial_n1_outage =  scheduled_outage(true, 1, 2200, [17]);
+    initial_n1_outage =  scheduled_outage(false, 0, 0, []);
     [ini_results, ini_failure] = n1_contingency(sim_settings, initial_n1_outage, generation_outages, load_data_obj, mpc, gen_array, block_dispatch, mpopt, sim_settings.start_hour, sim_settings.simulation_hours);
     assignin('base', 'initial_results_array', ini_results);
     assignin('base', 'initial_failure_array', ini_failure);
@@ -79,5 +79,5 @@ function initialization()
     toc;
 
     A = cell2mat(ini_results);
-    plot(1:sim_settings.end_hour, A);
+    plot(1:sim_settings.simulation_hours, A);
 end

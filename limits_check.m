@@ -23,7 +23,7 @@ function [limit_check_return, failure_params] = limits_check(mpc_case)
             apparent_power = s2;
         end
 
-        if((apparent_power > mpc_case.branch(n,6) * 1.2))
+        if((apparent_power > mpc_case.branch(n,6)))
             failure_params.MVA(i) = n;
             MVA_success_flag = false;
             i = i + 1;
@@ -33,7 +33,7 @@ function [limit_check_return, failure_params] = limits_check(mpc_case)
 
     voltage_success_flag = true;
     for n = 1:height(mpc_case.bus)
-        if((mpc_case.bus(n,8) >= 1.12 || mpc_case.bus(n,8) <= 0.88))
+        if((mpc_case.bus(n,8) >= 1.1 || mpc_case.bus(n,8) <= 0.9))
             failure_params.vmag(i) = n;
             voltage_success_flag = false;
             i = i + 1;
