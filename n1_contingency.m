@@ -61,7 +61,7 @@ function [results_array, failure_array] = n1_contingency(settings, scheduled_out
 
             %block dispatch
             if(block_disp == true)
-                temp_isl_mpc = gen_scale_block(temp_isl_mpc, block_dispatch, k, temp_gen_array(1), temp_gen_array(2), temp_gen_array(3), temp_gen_array(4), temp_gen_array(5));
+                temp_isl_mpc = gen_scale_block(temp_isl_mpc, temp_gen_array);
             else
                 temp_isl_mpc = gen_scale_linear(temp_isl_mpc);
             end
