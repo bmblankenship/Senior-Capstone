@@ -25,7 +25,7 @@ function [dispatch, generation_blocks] = generate_block_dispatch(settings, gen_b
                 switch block
                 case 1
                     for b = 1:height(gen_block_1.busses)
-                        if(gen_block_1.busess(b) == gen)
+                        if(gen_block_1.busses(b) == gen)
                             lower_cap(gen_block_1, gen_block_1.capacity(b));
                         end
                     end
