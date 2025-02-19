@@ -1,4 +1,4 @@
-function scaled_generation = gen_scale_linear(mpc)
+function [scaled_generation, total_generation, gen_scale_factor] = gen_scale_linear(mpc, load_data, hour)
     % gen_scale_linear: scales generation for linear scaling when block dispatch is disabled
     %   scaled_generation = gen_scale_block(mpc)
     %       returns scaled mpc based on the mpc that is passed in.
@@ -23,6 +23,7 @@ function scaled_generation = gen_scale_linear(mpc)
     for i = 1:height(scaled_generation.gen)
         if(scaled_generation.gen(i,8) == 1)
             scaled_generation.gen(i,2) = scaled_generation.gen(i,9) * gen_scale_factor;
+            %scaled_generation.gen(i,2) = scaled_generation.gen(i,9) * load_data.weighted_load(hour);
         end
     end
 end

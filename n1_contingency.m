@@ -61,7 +61,7 @@ function [results_array, failure_array] = n1_contingency(block_disp, scheduled_o
             if(block_disp == true)
                 temp_isl_mpc = gen_scale_block(temp_isl_mpc, temp_gen_array);
             else
-                temp_isl_mpc = gen_scale_linear(temp_isl_mpc);
+                [temp_isl_mpc, total_generation, gen_scale_factor] = gen_scale_linear(temp_isl_mpc, load_data, k);
             end
 
             results = runpf_wcu(temp_isl_mpc, mpopt);
@@ -78,6 +78,10 @@ function [results_array, failure_array] = n1_contingency(block_disp, scheduled_o
                 failure.vmag = failure_params.vmag;
                 failure.mva = failure_params.MVA;
                 failure.load = par_temp_load_data.actual_load(k);
+                if(block_disp ~= true)
+                    failure.generation = total_generation;
+                    failure.gen_scale_factor = gen_scale_factor;
+                end
                 failure_array{k,n} = failure;
             else
                 failure_array{k,n} = 0;

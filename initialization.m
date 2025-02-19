@@ -49,16 +49,16 @@ function initialization()
     % run schedule algorithm
 
     % Test schedule
-    schedule(1) = scheduled_outage(true, 1, 121, 17);
-    schedule(2) = scheduled_outage(true, 500, 547, 102);
-    schedule(3) = scheduled_outage(true, 900, 923, 131);
+    schedule(1) = scheduled_outage(true, 1, 10, 17);
+    %schedule(2) = scheduled_outage(true, 500, 547, 102);
+    %schedule(3) = scheduled_outage(true, 900, 923, 131);
     % number of scheduling iterations to run
     counter = 1;
     base_case = {height(schedule), counter};
 
     while(counter > 0)
         for i = 1:width(schedule)
-            [base_res, base_fail] = n1_contingency(sim_settings, schedule(i), generation_outages, load_data_obj, mpc, gen_array, block_dispatch, mpopt, schedule(i).start_hour, schedule(i).end_hour);
+            [base_res, base_fail] = n1_contingency(sim_settings.block_dispatch, schedule(i), generation_outages, load_data_obj, mpc, gen_array, mpopt, schedule(i).start_hour, schedule(i).end_hour);
             
             for j = 1:height(base_res)
                 if(~base_res{j,1})
