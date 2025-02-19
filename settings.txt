@@ -25,4 +25,4 @@ case118_CAPER_PeakLoad.m
 InitialCaseData.xlsx
 
 *** BLOCK DISPATCH ***
-false
+true
