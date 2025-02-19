@@ -1,4 +1,4 @@
-function [results_array, failure_array] = n1_contingency(settings, scheduled_outage, generation_outages, load_data, mpc, gen_array, block_dispatch, mpopt, start_hour, end_hour)
+function [results_array, failure_array] = n1_contingency(block_disp, scheduled_outage, generation_outages, load_data, mpc, gen_array, mpopt, start_hour, end_hour)
     % n1_contingency - A function to simulate n-1 contingency for power systems.
     %   Returns
     %       results_array => Returns the results of the limits_check function, detailing the health of the system in terms of MVA and Voltage Magnitude limits
@@ -10,11 +10,9 @@ function [results_array, failure_array] = n1_contingency(settings, scheduled_out
     %       load_data is a class object containing the actual and scaling factors for the load on a per hour basis.
     %       mpc is the system without any outages that the outages cases is built off of.
     %       gen_array is the collection of generation blocks 1-5 for the case that block_dispatch is on.
-    %       block_dispatch is a boolean input for block_dispatch being enabled. Set in settings.txt
     %       mpopt is the options for the powerflow including algorithm type.
     %       start_hour is the start hour of the simulation. Settings.start_hour is used for the initial case and is set in settings.txt
     %       end_hour is the end hour of the simulation. Settings.end_hour is used for the initial case and is set in settings.txt
-    block_disp = settings.block_dispatch;
     for k = start_hour:end_hour
         if(mod(k,10) == 0)
             disp("N-1 Contingency Hour: " + k);
