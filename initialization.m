@@ -10,6 +10,7 @@ function initialization()
     % Options Initilization
     mpopt = mpoption('pf.alg', sim_settings.algorithm, 'verbose', sim_settings.verbose);
     mpc = runpf_wcu(sim_settings.case_name, mpopt);
+    %mpc = loadcase(case118_CAPER_PeakLoad.m);
     
     % Load Data Initilization 
     load_data_obj = load_data(sim_settings);
