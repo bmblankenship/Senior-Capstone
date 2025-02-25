@@ -11,9 +11,12 @@ function [limit_check_return, failure_params] = limits_check(mpc_case)
     failure_params = struct;
     failure_params.vmag = [];
     failure_params.MVA = [];
+    failure_params.vmag_val = [];
+    failure_params.MVA_val = [];
     i = 1;
 
     MVA_success_flag = true;
+    %{
     for n = 1:height(mpc_case.branch)
         s1 = sqrt(mpc_case.branch(n,14)^2 + mpc_case.branch(n,15)^2);
         s2 = sqrt(mpc_case.branch(n,16)^2 + mpc_case.branch(n,17)^2);
@@ -25,16 +28,20 @@ function [limit_check_return, failure_params] = limits_check(mpc_case)
 
         if((apparent_power > mpc_case.branch(n,6)))
             failure_params.MVA(i) = n;
+            failure_params.MVA_val(i) = apparent_power;
             MVA_success_flag = false;
             i = i + 1;
         end
     end
-    i = 1;
+    %}
 
     voltage_success_flag = true;
+    
+    i = 1;
     for n = 1:height(mpc_case.bus)
         if((mpc_case.bus(n,8) >= 1.1 || mpc_case.bus(n,8) <= 0.9))
             failure_params.vmag(i) = n;
+            failure_params.vmag_val(i) = mpc_case.bus(n,8);
             voltage_success_flag = false;
             i = i + 1;
         end

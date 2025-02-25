@@ -75,9 +75,10 @@ function [results_array, failure_array] = n1_contingency(block_disp, scheduled_o
                 failure = struct;
                 failure.hour = k;
                 failure.branch_out = n;
-                failure.branch = results.branch;
                 failure.vmag = failure_params.vmag;
                 failure.mva = failure_params.MVA;
+                failure.vmag_val = failure_params.vmag_val;
+                failure.MVA_val = failure_params.MVA_val;
                 failure.load = par_temp_load_data.actual_load(k);
                 failure_array{k,n} = failure;
             else
