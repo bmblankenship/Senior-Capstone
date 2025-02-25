@@ -61,7 +61,10 @@ function [results_array, failure_array] = n1_contingency(block_disp, scheduled_o
             if(block_disp == true)
                 temp_isl_mpc = gen_scale_block(temp_isl_mpc, temp_gen_array);
             else
-                [temp_isl_mpc, total_generation, gen_scale_factor] = gen_scale_linear(temp_isl_mpc, load_data, k);
+                for i = 1:height(temp_isl_mpc.gen)
+                    temp_isl_mpc.gen(i,2) = temp_isl_mpc.gen(i,2) * par_temp_load_data.weighted_load(k);
+                end
+                %[temp_isl_mpc, total_generation, gen_scale_factor] = gen_scale_linear(temp_isl_mpc, load_data, k);
             end
 
             results = runpf_wcu(temp_isl_mpc, mpopt);
@@ -73,15 +76,9 @@ function [results_array, failure_array] = n1_contingency(block_disp, scheduled_o
                 failure.hour = k;
                 failure.branch_out = n;
                 failure.branch = results.branch;
-                failure.bus = results.bus;
-                failure.gen = results.gen;
                 failure.vmag = failure_params.vmag;
                 failure.mva = failure_params.MVA;
                 failure.load = par_temp_load_data.actual_load(k);
-                if(block_disp ~= true)
-                    failure.generation = total_generation;
-                    failure.gen_scale_factor = gen_scale_factor;
-                end
                 failure_array{k,n} = failure;
             else
                 failure_array{k,n} = 0;

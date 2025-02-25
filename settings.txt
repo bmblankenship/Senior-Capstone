@@ -16,7 +16,7 @@ NR-SH
 case118_CAPER_PeakLoad.m
 
 *** SIMULATION HOURS ***
-8760
+4000
 
 *** START HOUR ***
 1
@@ -25,4 +25,4 @@ case118_CAPER_PeakLoad.m
 InitialCaseData.xlsx
 
 *** BLOCK DISPATCH ***
-true
+false

@@ -8,9 +8,8 @@ function initialization()
     end
     
     % Options Initilization
-    mpopt = mpoption('pf.alg', sim_settings.algorithm, 'verbose', sim_settings.verbose);
-    mpc = runpf_wcu(sim_settings.case_name, mpopt);
-    %mpc = loadcase(case118_CAPER_PeakLoad.m);
+    mpopt = mpoption('pf.alg', sim_settings.algorithm, 'verbose', sim_settings.verbose, 'pf.enforce_q_lims', 1);
+    mpc = loadcase(sim_settings.case_name);
     
     % Load Data Initilization 
     load_data_obj = load_data(sim_settings);
@@ -74,4 +73,7 @@ function initialization()
     
     assignin('base', 'base_case', base_case);
     toc;
+
+    plot(sim_settings.start_hour:sim_settings.end_hour, cell2mat(ini_results));
+    ylim([-0.2 1.2]);
 end
