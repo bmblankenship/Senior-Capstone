@@ -19,13 +19,12 @@ function [results_array, failure_array] = n1_contingency(block_disp, scheduled_o
         end
         %temporary variables for parallel functionality 
         tempmpc = mpc;
-        temp_generation_outages = generation_outages;
-        temp_load_data = load_data;
-
-        for gens = 1:height(temp_generation_outages(:,1))
-            gen_temp = temp_generation_outages(gens,1);
-            gen_temp_start = temp_generation_outages(gens,2);
-            gen_temp_end = temp_generation_outages(gens,3);
+        
+        %{
+        for gens = 1:height(generation_outages(:,1))
+            gen_temp = generation_outages(gens,1);
+            gen_temp_start = generation_outages(gens,2);
+            gen_temp_end = generation_outages(gens,3);
             
             if(k >= gen_temp_start && k <= gen_temp_start + gen_temp_end)
                 for i = 1: height(tempmpc.gen)
@@ -35,6 +34,7 @@ function [results_array, failure_array] = n1_contingency(block_disp, scheduled_o
                 end
             end
         end%for loop
+        %}
 
         if(scheduled_outage.occuring == true) %where an outage is occuring
             for i = 1:height(scheduled_outage.branches)
@@ -46,26 +46,25 @@ function [results_array, failure_array] = n1_contingency(block_disp, scheduled_o
         parfor n = 1:height(tempmpc.branch)
             temp_gen_array = gen_array;
             partempmpc = tempmpc;
-            par_temp_load_data = temp_load_data;
+            par_temp_load_data = load_data;
             partempmpc.branch(n,11) = 0;
 
-            temp_isl_mpc = extract_islands(partempmpc, 1);
-            
             %load scaling
-            for i = 1:height(temp_isl_mpc.bus)
-                temp_isl_mpc.bus(i,3) = temp_isl_mpc.bus(i,3) * par_temp_load_data.weighted_load(k); %Real Power scaling
-                temp_isl_mpc.bus(i,4) = temp_isl_mpc.bus(i,4) * par_temp_load_data.weighted_load(k); %Reactive power scaling
+            for i = 1:height(partempmpc.bus)
+                partempmpc.bus(i,3) = partempmpc.bus(i,3) * par_temp_load_data.weighted_load(k); %Real Power scaling
+                partempmpc.bus(i,4) = partempmpc.bus(i,4) * par_temp_load_data.weighted_load(k); %Reactive power scaling
             end
 
             %block dispatch
             if(block_disp == true)
-                temp_isl_mpc = gen_scale_block(temp_isl_mpc, temp_gen_array);
+                partempmpc = gen_scale_block(partempmpc, temp_gen_array);
             else
-                for i = 1:height(temp_isl_mpc.gen)
-                    temp_isl_mpc.gen(i,2) = temp_isl_mpc.gen(i,2) * par_temp_load_data.weighted_load(k);
+                for i = 1:height(partempmpc.gen)
+                    partempmpc.gen(i,2) = partempmpc.gen(i,2) * par_temp_load_data.weighted_load(k);
                 end
-                %[temp_isl_mpc, total_generation, gen_scale_factor] = gen_scale_linear(temp_isl_mpc, load_data, k);
             end
+
+            temp_isl_mpc = extract_islands(partempmpc, 1);            
 
             results = runpf_wcu(temp_isl_mpc, mpopt);
             [limit_results, failure_params] = limits_check(results);

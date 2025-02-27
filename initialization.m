@@ -8,11 +8,12 @@ function initialization()
     end
     
     % Options Initilization
-    mpopt = mpoption('pf.alg', sim_settings.algorithm, 'verbose', sim_settings.verbose, 'pf.enforce_q_lims', 1);
+    %mpopt = mpoption('pf.alg', sim_settings.algorithm, 'verbose', sim_settings.verbose, 'pf.enforce_q_lims', 1);
+    mpopt = mpoption('pf.alg', sim_settings.algorithm, 'verbose', sim_settings.verbose);
     mpc = loadcase(sim_settings.case_name);
     
     % Load Data Initilization 
-    load_data_obj = load_data(sim_settings);
+    loaddata = load_data(sim_settings);
     
     % Generation Initilization
     generation_outages = generator_outage(sim_settings);
@@ -37,12 +38,12 @@ function initialization()
     % MATLAB debugging Variables
     assignin('base', 'mpc', mpc);
     assignin('base', 'generation_outages', generation_outages);
-    assignin('base', 'load_data', load_data_obj);
+    assignin('base', 'load_data', loaddata);
     
     % initial N-1 contingency to verify health of the system with planned generator outages
     disp("Starting N-1 Contingency Analysis");
     initial_n1_outage =  scheduled_outage(false, 0, 0, []);
-    [ini_results, ini_failure] = n1_contingency(sim_settings.block_dispatch, initial_n1_outage, generation_outages, load_data_obj, mpc, gen_array, mpopt, sim_settings.start_hour, sim_settings.end_hour);
+    [ini_results, ini_failure] = n1_contingency(sim_settings.block_dispatch, initial_n1_outage, generation_outages, loaddata, mpc, gen_array, mpopt, sim_settings.start_hour, sim_settings.end_hour);
     assignin('base', 'initial_results_array', ini_results);
     assignin('base', 'initial_failure_array', ini_failure);
 
@@ -58,7 +59,7 @@ function initialization()
 
     while(counter > 0)
         for i = 1:width(schedule)
-            [base_res, base_fail] = n1_contingency(sim_settings.block_dispatch, schedule(i), generation_outages, load_data_obj, mpc, gen_array, mpopt, schedule(i).start_hour, schedule(i).end_hour);
+            [base_res, base_fail] = n1_contingency(sim_settings.block_dispatch, schedule(i), generation_outages, loaddata, mpc, gen_array, mpopt, schedule(i).start_hour, schedule(i).end_hour);
             
             for j = 1:height(base_res)
                 if(~base_res{j,1})
@@ -76,4 +77,5 @@ function initialization()
 
     plot(sim_settings.start_hour:sim_settings.end_hour, cell2mat(ini_results));
     ylim([-0.2 1.2]);
+    title('No Gen Outage | Vmag fail only | no Q lim enforce');
 end
