@@ -10,18 +10,20 @@ function scaled_generation = gen_scale_block(gen_mpc, gen_array)
     b4_actual = 0;
     b5_actual = 0;
 
-    b1_disp = 0;
-    b2_disp = 0;
-    b3_disp = 0;
-    b4_disp = 0;
-    b5_disp = 0;
+    b1_disp = 0.0;
+    b2_disp = 0.0;
+    b3_disp = 0.0;
+    b4_disp = 0.0;
+    b5_disp = 0.0;
 
     total_load = 0;
 
+    % Calculate total load
     for i = 1:height(scaled_generation.bus)
         total_load = total_load + scaled_generation.bus(i,3);
     end
 
+    % Calculate available generation in each block for active generators
     for block = 1:5
         for blk = 1:height(gen_array(block, 1).capacity)
             for check_exists = 1:height(scaled_generation.gen)
@@ -43,7 +45,7 @@ function scaled_generation = gen_scale_block(gen_mpc, gen_array)
         end
     end
 
-    % check each block versus load and apply 0-1 value to b#_disp variable
+    % Check each block versus load and apply 0-1 value to b#_disp variable
     if total_load > 0 && total_load > b1_actual
         b1_disp = 1;
         total_load = total_load - b1_actual;
@@ -84,7 +86,11 @@ function scaled_generation = gen_scale_block(gen_mpc, gen_array)
         total_load = 0;
     end
 
-    % iterate through each block and apply disp variable to all generation
+    if(total_load > 0)
+        disp("Insufficient generation.");
+    end
+
+    % iterate through each block and apply dispatch variable to all generation
     for block = 1:5
         for blk = 1:height(gen_array(block, 1).busses)
             for check_exists = 1:height(scaled_generation.gen)

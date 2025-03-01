@@ -9,7 +9,8 @@ classdef local_settings
         end_hour % Integer: number of hours of the year to iterate over, maximum value 8760
         start_hour % Integer: hour index in year to start the simulation. Default should be 1 for most cases
         case_sheet % String: The Excel sheet containing the original case data
-        block_dispatch % Boolean: enable or disable block dispatch
+        block_dispatch % Integer: value of 0 or 1. 1 = enable or 0 = disable block dispatch
+        generation_outage % Integer: value of 0 or 1. 1 = enable or 0 = disable generation outages
     end
 
     methods
@@ -23,12 +24,8 @@ classdef local_settings
             this.end_hour = cell2mat(textscan(fid, '%d', 1, 'delimiter', '\n', 'headerlines', 2));
             this.start_hour = cell2mat(textscan(fid, '%d', 1, 'delimiter', '\n', 'headerlines', 2));
             this.case_sheet = string(textscan(fid, '%q', 1, 'delimiter', '\n', 'headerlines', 2));
-            temp = string(textscan(fid, '%q', 1, 'delimiter', '\n', 'headerlines', 2));
-            if (temp == "false")
-                this.block_dispatch = false;
-            else
-                this.block_dispatch = true;
-            end
+            this.block_dispatch = cell2mat(textscan(fid, '%d', 1, 'delimiter', '\n', 'headerlines', 2));
+            this.generation_outage = cell2mat(textscan(fid, '%d', 1, 'delimiter', '\n', 'headerlines', 2));
         end
     end
 end

@@ -18,41 +18,29 @@ function initialization()
     % Generation Initilization
     generation_outages = generator_outage(sim_settings);
     gen_array = [];
-    if(sim_settings.block_dispatch == true)
+    % Block Dispatch Initilization
+    if(sim_settings.block_dispatch == 1)
         gen_block_1 = generation_block(sim_settings, 1);
         gen_block_2 = generation_block(sim_settings, 2);
         gen_block_3 = generation_block(sim_settings, 3);
         gen_block_4 = generation_block(sim_settings, 4);
         gen_block_5 = generation_block(sim_settings, 5);
         gen_array = [gen_block_1; gen_block_2; gen_block_3; gen_block_4; gen_block_5];
-        
-        % Block debugging variables
-        assignin('base', 'gen_block_1', gen_block_1);
-        assignin('base', 'gen_block_2', gen_block_2);
-        assignin('base', 'gen_block_3', gen_block_3);
-        assignin('base', 'gen_block_4', gen_block_4);
-        assignin('base', 'gen_block_5', gen_block_5);
-        assignin('base', 'gen_array', gen_array);
     end
-    
-    % MATLAB debugging Variables
-    assignin('base', 'mpc', mpc);
-    assignin('base', 'generation_outages', generation_outages);
-    assignin('base', 'load_data', loaddata);
     
     % initial N-1 contingency to verify health of the system with planned generator outages
     disp("Starting N-1 Contingency Analysis");
-    initial_n1_outage =  scheduled_outage(false, 0, 0, []);
-    [ini_results, ini_failure] = n1_contingency(sim_settings.block_dispatch, initial_n1_outage, generation_outages, loaddata, mpc, gen_array, mpopt, sim_settings.start_hour, sim_settings.end_hour);
+    initial_n1_outage =  scheduled_outage(-1, 0, []);
+    [ini_results, ini_failure] = n1_contingency(sim_settings, initial_n1_outage, generation_outages, loaddata, mpc, gen_array, mpopt, sim_settings.start_hour, sim_settings.end_hour);
     assignin('base', 'initial_results_array', ini_results);
     assignin('base', 'initial_failure_array', ini_failure);
 
     % run schedule algorithm
 
     % Test schedule
-    schedule(1) = scheduled_outage(true, 1, 10, 17);
-    %schedule(2) = scheduled_outage(true, 500, 547, 102);
-    %schedule(3) = scheduled_outage(true, 900, 923, 131);
+    schedule(1) = scheduled_outage(1, 10, 17);
+    %schedule(2) = scheduled_outage(500, 547, 102);
+    %schedule(3) = scheduled_outage(900, 923, 131);
     % number of scheduling iterations to run
     counter = 1;
     base_case = {height(schedule), counter};
