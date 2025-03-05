@@ -28,4 +28,4 @@ InitialCaseData.xlsx
 0
 
 *** GENERATOR OUTAGES ***
-0
+1
