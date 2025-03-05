@@ -33,7 +33,7 @@ function [results_array, failure_array] = n1_contingency(settings, scheduled_out
                 if(k >= gen_temp_start && k <= gen_temp_start + gen_temp_end)
                     for i = 1: height(tempmpc.gen)
                         if tempmpc.gen(i,1) == gen_temp
-                            generation_out = generation_out + generation_outages(gens,5);
+                            generation_out = generation_out + generation_outages(gens,4);
                             tempmpc.gen(i,8) = 0;
                         end
                     end
@@ -41,26 +41,12 @@ function [results_array, failure_array] = n1_contingency(settings, scheduled_out
             end
 
             if(generation_out > 0)
-                peaker_avail = 0;
                 for i = 1:height(tempmpc.gen)
                     if(tempmpc.gen(i,2) == 0)
-                        peaker_avail = peaker_avail + tempmpc.gen(i,9);
+                        tempmpc.gen(i,2) = tempmpc.gen(i,9);
                     end
                 end
-                if(generation_out > peaker_avail)
-                    for i = 1:height(tempmpc.gen)
-                        if(tempmpc.gen(i,2) == 0)
-                            tempmpc.gen(i,2) = tempmpc.gen(i,9);
-                        end
-                    end
-                else
-                    peaker_level = (peaker_avail - generation_out) / peaker_avail;
-                    for i = 1:height(tempmpc.gen)
-                        if(tempmpc.gen(i,2) == 0)
-                            tempmpc.gen(i,2) = peaker_level * tempmpc.gen(i,9);
-                        end
-                    end
-                end
+               
             end
         end
 

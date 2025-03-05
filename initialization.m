@@ -47,7 +47,7 @@ function initialization()
 
     while(counter > 0)
         for i = 1:width(schedule)
-            [base_res, base_fail] = n1_contingency(sim_settings.block_dispatch, schedule(i), generation_outages, loaddata, mpc, gen_array, mpopt, schedule(i).start_hour, schedule(i).end_hour);
+            [base_res, base_fail] = n1_contingency(sim_settings, schedule(i), generation_outages, loaddata, mpc, gen_array, mpopt, schedule(i).start_hour, schedule(i).end_hour);
             
             for j = 1:height(base_res)
                 if(~base_res{j,1})
@@ -65,5 +65,5 @@ function initialization()
 
     plot(sim_settings.start_hour:sim_settings.end_hour, cell2mat(ini_results));
     ylim([-0.2 1.2]);
-    title('No Gen Outage | Vmag fail only | no Q lim enforce');
+    title('Gen Outage | MVA Fail only | no Q lim enforce | Peaker Disp on Outage');
 end

@@ -6,7 +6,6 @@ function [generator_outage] = generator_outage(settings)
     %       settings contains the names of the sheets to be used to generate the tables.
     w = warning('off', 'MATLAB:table:ModifiedAndSavedVarnames');
     generator_data = readtable(settings.outage_sheet, "sheet", "Generation");
-    gen_block_data = table2array(readtable(settings.case_sheet, "sheet", "Gen"));
     warning(w);
     
     bus = table2array(generator_data(:,1));
@@ -16,7 +15,6 @@ function [generator_outage] = generator_outage(settings)
     
     start_hours = [zeros, length(gen_start_dates)];
     end_hours = [zeros, length(gen_outage_duration)];
-    blocks = [zeros, length(gen_outage_duration)];
 
     for k = 1:length(gen_start_dates)
         d = day(gen_start_dates(k), 'dayofyear');
@@ -27,13 +25,5 @@ function [generator_outage] = generator_outage(settings)
         end_hours(k) = gen_outage_duration(k) * 168;
     end
 
-    generator_outage = table2array(table(bus, transpose(start_hours), transpose(end_hours), transpose(blocks) , gen_pvalues));
-
-    for k = 1:height(generator_outage)
-        for j = 1:height(gen_block_data)
-            if(gen_block_data(j,1) == generator_outage(k,1))
-                generator_outage(k,4) = gen_block_data(j,22);
-            end
-        end
-    end
+    generator_outage = table2array(table(bus, transpose(start_hours), transpose(end_hours), gen_pvalues));
 end
