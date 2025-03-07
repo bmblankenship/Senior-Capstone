@@ -42,8 +42,9 @@ function [results_array, failure_array] = n1_contingency(settings, scheduled_out
 
             if(generation_out > 0)
                 for i = 1:height(tempmpc.gen)
-                    if(tempmpc.gen(i,2) == 0)
+                    if(tempmpc.gen(i,2) == 0 && generation_out > 0)
                         tempmpc.gen(i,2) = tempmpc.gen(i,9);
+                        generation_out = generation_out - tempmpc.gen(i,9);
                     end
                 end
                

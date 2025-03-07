@@ -37,7 +37,6 @@ function [limit_check_return, failure_params] = limits_check(mpc_case)
 
     % Voltage Magnitude limit check
     i = 1;
-    %{
     for n = 1:height(mpc_case.bus)
         if((mpc_case.bus(n,8) >= 1.1 || mpc_case.bus(n,8) <= 0.9))
             failure_params.vmag(i) = n;
@@ -46,5 +45,4 @@ function [limit_check_return, failure_params] = limits_check(mpc_case)
             i = i + 1;
         end
     end
-    %}
 end

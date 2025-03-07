@@ -65,5 +65,5 @@ function initialization()
 
     plot(sim_settings.start_hour:sim_settings.end_hour, cell2mat(ini_results));
     ylim([-0.2 1.2]);
-    title('Gen Outage | MVA Fail only | no Q lim enforce | Peaker Disp on Outage');
+    title('Gen Outage | No Q lim enforce | Peaker Disp on Outage');
 end
