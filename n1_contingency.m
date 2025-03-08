@@ -21,25 +21,22 @@ function [results_array, failure_array] = n1_contingency(settings, scheduled_out
         end
         % temporary mpc to prevent overwriting base case
         tempmpc = mpc;
-        
-        % generation outage
+
+        % Turn generation off in the case of an outage
         if(gen_outage == 1)
             generation_out = 0;
-            for gens = 1:height(generation_outages(:,1))
-                gen_temp = generation_outages(gens,1);
-                gen_temp_start = generation_outages(gens,2);
-                gen_temp_end = generation_outages(gens,3);
-                
-                if(k >= gen_temp_start && k <= gen_temp_start + gen_temp_end)
-                    for i = 1: height(tempmpc.gen)
-                        if tempmpc.gen(i,1) == gen_temp
-                            generation_out = generation_out + generation_outages(gens,4);
-                            tempmpc.gen(i,8) = 0;
+            for i = 1:height(generation_outages)
+                if(k >= generation_outages(i).start_hour && k < generation_outages(i).end_hour)
+                    for gens = 1:height(tempmpc.gen)
+                        if tempmpc.gen(gens,1) == generation_outages(i).bus
+                            generation_out = generation_out + generation_outages(i).real_power;
+                            tempmpc.gen(gens,8) = 0;
                         end
                     end
                 end
             end
 
+            % Dispatch peakers to cover outages in generation
             if(generation_out > 0)
                 for i = 1:height(tempmpc.gen)
                     if(tempmpc.gen(i,2) == 0 && generation_out > 0)
@@ -99,6 +96,7 @@ function [results_array, failure_array] = n1_contingency(settings, scheduled_out
                 failure.vmag_val = failure_params.vmag_val;
                 failure.MVA_val = failure_params.MVA_val;
                 failure.load = par_temp_load_data.actual_load(k);
+                
                 failure_array{k,n} = failure;
             else
                 failure_array{k,n} = 0;

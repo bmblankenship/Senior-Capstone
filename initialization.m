@@ -8,15 +8,25 @@ function initialization()
     end
     
     % Options Initilization
-    %mpopt = mpoption('pf.alg', sim_settings.algorithm, 'verbose', sim_settings.verbose, 'pf.enforce_q_lims', 1);
     mpopt = mpoption('pf.alg', sim_settings.algorithm, 'verbose', sim_settings.verbose);
     mpc = loadcase(sim_settings.case_name);
     
     % Load Data Initilization 
     loaddata = load_data(sim_settings);
     
-    % Generation Initilization
-    generation_outages = generator_outage(sim_settings);
+    % Generation Outage Initilization
+    w = warning('off', 'MATLAB:table:ModifiedAndSavedVarnames');
+    generator_outage_data = table2cell(readtable(sim_settings.outage_sheet, "sheet", "Generation"));
+    warning(w);
+    
+    for i = 1:height(generator_outage_data)
+        % Assumes MM/DD/YYYY format
+        start_time = day(generator_outage_data{i,4}, 'dayofyear') * 24;
+        % Assumes duration is listed in weeks
+        end_time = generator_outage_data{i,5} * 168;
+        generation_outages(i,1) = generation_outage(start_time, end_time, generator_outage_data{i,1}, generator_outage_data{i,2}); 
+    end
+
     gen_array = [];
     % Block Dispatch Initilization
     if(sim_settings.block_dispatch == 1)
@@ -62,7 +72,7 @@ function initialization()
     
     assignin('base', 'base_case', base_case);
     toc;
-
+    
     plot(sim_settings.start_hour:sim_settings.end_hour, cell2mat(ini_results));
     ylim([-0.2 1.2]);
     title('Gen Outage | No Q lim enforce | Peaker Disp on Outage');
