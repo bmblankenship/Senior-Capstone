@@ -96,13 +96,14 @@ function initialization()
     assignin('base', 'initial_results_array', ini_results);
     assignin('base', 'initial_failure_array', ini_failure);
     logMessage(['Initial N-1 Contingency Analysis complete. Start Hour: ' num2str(sim_settings.start_hour) ', End Hour: ' num2str(sim_settings.end_hour)]);
-    % run schedule algorithm
 
-    % Test schedule
+    % Run schedule algorithm
     logMessage('Starting schedule algorithm...');
-    schedule(1) = scheduled_outage(1, 10, 17);
-    %schedule(2) = scheduled_outage(500, 547, 102);
-    %schedule(3) = scheduled_outage(900, 923, 131);
+    [branch_outages] = priority(sim_settings);
+    assignin('base', 'branch_outages', branch_outages);
+    [schedule] = schedule_algorithm(sim_settings, branch_outages, ini_results, generation_outages, loaddata, mpc, gen_array, mpopt);
+    assignin('base', 'schedule', schedule);
+    
     % number of scheduling iterations to run
     counter = 1;
     base_case = {height(schedule), counter};
