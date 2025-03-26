@@ -35,29 +35,16 @@ function initialization()
     tic;
     sim_settings = local_settings();
 
-        if(sim_settings.end_hour > 8760)
+    if(sim_settings.end_hour > 8760)
         warning('Simulation Hours Specified are out of range (>8760). Setting to 8760.');
         sim_settings.end_hour = 8760;
         logMessage('Warning: Simulation Hours Specified are out of range (>8760). Setting to 8760.');
     end
 
-    % Options Initialization
-    mpopt = mpoption('pf.alg', sim_settings.algorithm, 'verbose', sim_settings.verbose);
-    mpc = runpf_wcu(sim_settings.case_name, mpopt);
-    logMessage('Power flow run completed.');
-
-    % Load Data Initialization 
-    load_data_obj = load_data(sim_settings);
-    logMessage('Data loading complete.');
-
-    if(sim_settings.end_hour > 8760)
-        warning('Simulation Hours Specified are out of range (>8760). Setting to 8760.');
-        sim_settings.end_hour = 8760;
-    end
-    
     % Options Initilization
     mpopt = mpoption('pf.alg', sim_settings.algorithm, 'verbose', sim_settings.verbose);
     mpc = loadcase(sim_settings.case_name);
+    logMessage('Case Loaded.');
     
     % Load Data Initilization 
     loaddata = load_data(sim_settings);
@@ -96,6 +83,7 @@ function initialization()
     assignin('base', 'initial_results_array', ini_results);
     assignin('base', 'initial_failure_array', ini_failure);
     logMessage(['Initial N-1 Contingency Analysis complete. Start Hour: ' num2str(sim_settings.start_hour) ', End Hour: ' num2str(sim_settings.end_hour)]);
+    
     % run schedule algorithm
 
     % Test schedule
