@@ -5,8 +5,9 @@ classdef scheduled_outage
     %   this.branches   => Returns branch value(s) for the outages as a list
     %   this.success    => indicates if the simulated outage was successful
     %
-    %   this = schedule_outage(occuring, start_hour, end_hour, branches)
+    %   outage = schedule_outage(start_hour, end_hour, branches)
     %       adds outage to the system with the input arguements for conditions
+    %       success will default to true and does not need to be passed in.
     %
     %   success = set_statue(state)
     %       sets success flag to true or false based on the state input

@@ -3,18 +3,11 @@ classdef generation_block
     %   this.busses => array of busses in the dispatch block.
     %   this.capacity => array of the capacity located at each of the busses in this.busses
     %   this.total_capacity => the sum total of generation capacity present in the block
-    %   this.block_table
     %
     %   this = generation_block(settings, block)
     %       Constructor for new block object
     %       Settings is the class referance to the settings file for the simulation
     %       block is the integer value of the block currently being generated (1-5)
-    %
-    %   total_capacity = lower_cap(this, val)
-    %       lowers the capacity of the block by the amount passed in by val
-    %
-    %   total_capacity = inc_cap(this, val)
-    %       increases the capacity of the block by the amount passed in by val
     %
     %   busses = index_busses(this, block, block_arr)
     %       indexes busses present in the block based on the block_arr table
@@ -38,14 +31,6 @@ classdef generation_block
             this.busses = index_busses(this, block, block_table);
             this.capacity = index_capacity(this, block, block_table);
             this.total_capacity = calc_total_capacity(this, block, block_table);
-        end
-
-        function total_capacity = lower_cap(this, val)
-            total_capacity = this.total_capacity - val;
-        end
-
-        function total_capacity = inc_cap(this, val)
-            total_capacity = this.total_capacity + val;
         end
         
         function busses = index_busses(this, block, block_arr)

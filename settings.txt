@@ -16,7 +16,7 @@ NR-SH
 case118_CAPER_PeakLoad.m
 
 *** END HOUR ***
-10
+8760
 
 *** START HOUR ***
 1

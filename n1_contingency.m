@@ -16,6 +16,7 @@ function [results_array, failure_array] = n1_contingency(settings, scheduled_out
     block_disp = settings.block_dispatch;
     gen_outage = settings.generation_outage;
     for k = start_hour:end_hour
+        % used to display what hour of the year the simulation is currently working on
         if(mod(k,10) == 0)
             disp("N-1 Contingency Hour: " + k);
         end

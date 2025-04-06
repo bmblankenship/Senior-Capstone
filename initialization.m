@@ -32,9 +32,12 @@ function initialization()
 %------------------------------------------------------------------------------------------------------------------
 
 
-    tic;
+    tic; % used to display runtime, can be disabled if not desired.
+
+    % Get simulation settings from the settings.txt file
     sim_settings = local_settings();
 
+    % Check that the end hour does not go past the end of the year.
     if(sim_settings.end_hour > 8760)
         warning('Simulation Hours Specified are out of range (>8760). Setting to 8760.');
         sim_settings.end_hour = 8760;
@@ -43,6 +46,8 @@ function initialization()
 
     % Options Initilization
     mpopt = mpoption('pf.alg', sim_settings.algorithm, 'verbose', sim_settings.verbose);
+
+    % Load case data from existing file. case118_CAPER_PeakLoad.m was the file used for testing.
     mpc = loadcase(sim_settings.case_name);
     logMessage('Case Loaded.');
     
@@ -64,8 +69,9 @@ function initialization()
         generation_outages(i,1) = generation_outage(start_time, end_time, generator_outage_data{i,1}, generator_outage_data{i,2}); 
     end
 
-    gen_array = [];
     % Block Dispatch Initilization
+    % This was off by default for most of the testing. Block dispatch does not work well with this case study.
+    gen_array = [];
     if(sim_settings.block_dispatch == 1)
         gen_block_1 = generation_block(sim_settings, 1);
         gen_block_2 = generation_block(sim_settings, 2);
@@ -113,6 +119,7 @@ function initialization()
     assignin('base', 'base_case', base_case);
     toc;
     
+    % This plots the initial N-1 contingency on a line graph to show what hours of the year pass or failed.
     plot(sim_settings.start_hour:sim_settings.end_hour, cell2mat(ini_results));
     ylim([-0.2 1.2]);
     title('Gen Outage | No Q lim enforce | Peaker Disp on Outage');

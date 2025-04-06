@@ -18,7 +18,7 @@ function scaled_generation = gen_scale_block(gen_mpc, gen_array)
 
     total_load = 0;
 
-    % Calculate total load
+    % Calculate total load present on the system.
     for i = 1:height(scaled_generation.bus)
         total_load = total_load + scaled_generation.bus(i,3);
     end
@@ -46,6 +46,8 @@ function scaled_generation = gen_scale_block(gen_mpc, gen_array)
     end
 
     % Check each block versus load and apply 0-1 value to b#_disp variable
+    % 0 is not dispatched at all
+    % 1 is fully dispatched
     if total_load > 0 && total_load > b1_actual
         b1_disp = 1;
         total_load = total_load - b1_actual;
