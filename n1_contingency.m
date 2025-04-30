@@ -16,6 +16,10 @@ function [results_array, failure_array] = n1_contingency(settings, scheduled_out
     block_disp = settings.block_dispatch;
     gen_outage = settings.generation_outage;
     for k = start_hour:end_hour
+        early_escape = false;
+        if(scheduled_outage.start_hour ~= -1)
+            early_escape = true;
+        end
         % used to display what hour of the year the simulation is currently working on
         if(mod(k,10) == 0)
             disp("N-1 Contingency Hour: " + k);
@@ -118,6 +122,10 @@ function [results_array, failure_array] = n1_contingency(settings, scheduled_out
             end
         end
         results_array{k,1} = failure_checker;
+
+        if(~failure_checker && early_escape)
+            break;
+        end
 
     end %for loop
 end
