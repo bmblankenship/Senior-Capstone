@@ -103,9 +103,35 @@ function initialization()
     assignin('base', 'branch_outages', branch_outages);
     [schedule] = schedule_algorithm(sim_settings, branch_outages, ini_results, generation_outages, loaddata, mpc, gen_array, mpopt);
     assignin('base', 'schedule', schedule);
+
+    % Excel Output and Calendar Generation
+    dates = datetime(2023,1,1) + hours(0:8759);
+    for j = 1:numel(ini_results)
+        output_schedule(j).Date = dates(j);  % Assign the date
+        output_schedule(j).Hour = j;         % Assign the hour count
+    end
+
+    for i = 1:numel(schedule)
+        if schedule(i).end_hour ~= 1 
+            for j = schedule(i).start_hour:schedule(i).end_hour
+                output_schedule(j).Branch = schedule(i).branches;
+            end 
+        end            
+    end
+
+    for j = 1:numel(output_schedule)
+        if ~isequal(iniresults{j}, 1)
+            output_schedule(j).Fails = 1;
+        end
+    end
+
+    % Output
+    filename = "ScheduleOrder.xlsx";
+    writetable(struct2table(output_schedule), filename)
+    outageCalendarGUI(ini_results)
     
     % number of scheduling iterations to run
-    counter = 1;
+    counter = 0;
     base_case = {height(schedule), counter};
 
     while(counter > 0)
