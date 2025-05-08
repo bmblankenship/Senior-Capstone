@@ -1,4 +1,4 @@
-function [schedule] = schedule_algorithm(sim_settings, branch_outages, initial_results_array, generation_outages, loaddata, mpc, gen_array, mpopt)
+function [schedule] = schedule_algorithm(settings, branch_outages, initial_results_array, generation_outages, load_data, mpc, gen_array, mpopt)
 % schedule_agorithm - A function to set up outage data based on initial conditions
 %   Returns
 %       schedule => A class storing outage data
@@ -61,9 +61,15 @@ function [schedule] = schedule_algorithm(sim_settings, branch_outages, initial_r
                         end_hour = j-1;
                         branches = k;
                         schedule(s_num,1) = scheduled_outage(start_hour, end_hour, branches);
-                        s_num = s_num+1;
-                        availability(start_hour:end_hour) = 0;
-                        break
+                        [results_array, ~] = n1_contingency(settings, schedule(s_num), generation_outages, load_data, mpc, gen_array, mpopt, start_hour, end_hour);
+                        
+                        if all([cellfun(@(x) isequal(x, 1), results_array)])
+                            s_num = s_num+1;
+                            availability(start_hour:end_hour) = 0;
+                            break
+                        else
+                            slots = 0;
+                        end
                     else
                         if branch_outages(i).Splits > 0
                             splits = true; % if split value is available then it could be allowed to split
@@ -79,22 +85,31 @@ function [schedule] = schedule_algorithm(sim_settings, branch_outages, initial_r
                         end_hour = j-(branch_outages(i+1).Duration)-1;
                         branches = k(1);
                         schedule(s_num,1) = scheduled_outage(start_hour, end_hour, branches);
-                        s_num = s_num+1;
-    
-                        start_hour = end_hour + 1;
-                        end_hour = end_hour + branch_outages(i).OutageOverlap;
-                        branches = k;
-                        schedule(s_num,1) = scheduled_outage(start_hour, end_hour, branches);
-                        s_num = s_num+1;
+                        [results_array, ~] = n1_contingency(settings, schedule(s_num), generation_outages, load_data, mpc, gen_array, mpopt, start_hour, end_hour);
                         
-                        start_hour = end_hour + 1;
-                        end_hour = j-1;
-                        branches = k(2);
-                        schedule(s_num,1) = scheduled_outage(start_hour, end_hour, branches);
-                        s_num = s_num+1;
-    
-                        availability(j - (branch_outages(i).Duration + branch_outages(i+1).Duration - branch_outages(i).OutageOverlap):end_hour) = 0; % do this after n-1
-                        break
+                        if all([cellfun(@(x) isequal(x, 1), results_array)])
+                            s_num = s_num+1;
+                            start_hour = end_hour + 1;
+                            end_hour = end_hour + branch_outages(i).OutageOverlap;
+                            branches = k;
+                            schedule(s_num,1) = scheduled_outage(start_hour, end_hour, branches);
+                            [results_array, ~] = n1_contingency(settings, schedule(s_num), generation_outages, load_data, mpc, gen_array, mpopt, start_hour, end_hour);
+                            if all([cellfun(@(x) isequal(x, 1), results_array)])
+                                s_num = s_num+1;
+                                start_hour = end_hour + 1;
+                                end_hour = j-1;
+                                branches = k(2);
+                                schedule(s_num,1) = scheduled_outage(start_hour, end_hour, branches);
+                                [results_array, ~] = n1_contingency(settings, schedule(s_num), generation_outages, load_data, mpc, gen_array, mpopt, start_hour, end_hour);
+                                if all([cellfun(@(x) isequal(x, 1), results_array)])
+                                    s_num = s_num+1;
+                                    availability(j - (branch_outages(i).Duration + branch_outages(i+1).Duration - branch_outages(i).OutageOverlap):end_hour) = 0; % do this after n-1
+                                    break
+                                end
+                            end
+                        else
+                            slots = 0;
+                        end
                     end
                 end
                 if overlap == false && splits == true && stack == true
@@ -110,13 +125,19 @@ function [schedule] = schedule_algorithm(sim_settings, branch_outages, initial_r
                         end_hour = j-1;
                         branches = k;
                         schedule(s_num,1) = scheduled_outage(start_hour, end_hour, branches);
-                        availability(start_hour:end_hour) = 0; % do this after n-1?
-                        s_num = s_num+1;
-                        set = set + 1;
-                        slots = 0;
-                        start_hour = 0;
-                        if set == (branch_outages(i).Duration/branch_outages(i).Splits)
+                        [results_array, ~] = n1_contingency(settings, schedule(s_num), generation_outages, load_data, mpc, gen_array, mpopt, start_hour, end_hour);
+                        
+                        if all([cellfun(@(x) isequal(x, 1), results_array)])
+                            availability(start_hour:end_hour) = 0;
+                            s_num = s_num+1;
+                            set = set + 1;
+                            slots = 0;
+                            start_hour = 0;
+                            if set == (branch_outages(i).Duration/branch_outages(i).Splits)
                             break
+                            end
+                        else
+                            slots = 0;
                         end
                     end
                 end

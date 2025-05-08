@@ -123,26 +123,6 @@ function initialization()
     writetable(struct2table(output_schedule), filename)
     outageCalendarGUI(ini_results)
     
-    % number of scheduling iterations to run
-    counter = 0;
-    base_case = {height(schedule), counter};
-
-    while(counter > 0)
-        for i = 1:width(schedule)
-            [base_res, base_fail] = n1_contingency(sim_settings, schedule(i), generation_outages, loaddata, mpc, gen_array, mpopt, schedule(i).start_hour, schedule(i).end_hour);
-            
-            for j = 1:height(base_res)
-                if(~base_res{j,1})
-                    schedule(i).set_state(false);
-                end
-            end
-
-            base_case{i,counter} = schedule(i);
-        end
-        counter = counter - 1;
-    end
-    
-    assignin('base', 'base_case', base_case);
     toc;
     
     % This plots the initial N-1 contingency on a line graph to show what hours of the year pass or failed.
